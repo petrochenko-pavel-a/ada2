@@ -4,9 +4,13 @@
 	<groupId>com.onpositive.ada.parser</groupId>
 	<artifactId>ada-parser</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<properties>
+        <src.dir>src</src.dir>
+    </properties>
 	<build>
 		
-		<plugins>
+        <sourceDirectory>${src.dir}</sourceDirectory>
+    	<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.3</version>
