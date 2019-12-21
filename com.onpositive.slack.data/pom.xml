@@ -27,6 +27,11 @@
 			<version>1.13</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/jfree/jfreechart -->
-		
+
+		<dependency>
+			<groupId>com.onpositive.chart.easy</groupId>
+			<artifactId>com.onpositive.chart.easy</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>
