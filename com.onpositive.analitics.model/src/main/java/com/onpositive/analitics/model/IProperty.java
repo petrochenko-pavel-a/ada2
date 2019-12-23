@@ -17,4 +17,8 @@ public interface IProperty extends INamed{
 	boolean multiValue();
 
 	public Object getValue(Object obj);
+
+	default <T> T annotation(Class<T>clazz) {
+		return null;
+	}
 }

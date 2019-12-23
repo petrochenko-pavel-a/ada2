@@ -8,4 +8,8 @@ public interface IType extends INamed{
 
 	boolean isSubtypeOf(IType domain);
 
+	
+	default <T> T annotation(Class<T>clazz) {
+		return null;
+	}
 }

@@ -12,7 +12,7 @@ import com.onpositive.analitics.model.IProperty;
 
 public class SimpleDisambiguator {
 
-	Comparator<IParsedEntity> countEstimator = new Comparator<IParsedEntity>() {
+	protected Comparator<IParsedEntity> countEstimator = new Comparator<IParsedEntity>() {
 
 		@Override
 		public int compare(IParsedEntity o1, IParsedEntity o2) {

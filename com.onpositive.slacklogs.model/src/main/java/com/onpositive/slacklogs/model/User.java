@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.onpositive.analitics.model.Labels;
+import com.onpositive.analitics.model.java.Property;
+
+@Labels({"user","member"})
 public class User implements Serializable{
 
 	private String id;
@@ -25,6 +29,7 @@ public class User implements Serializable{
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	@Property
 	protected String name;
 	
 	protected String real_name;

@@ -4,6 +4,10 @@
 	<groupId>com.onpositive.slacklogs.model</groupId>
 	<artifactId>com.onpositive.slacklogs.model</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<properties>
+	<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
@@ -14,6 +18,16 @@
 			<groupId>de.ruedigermoeller</groupId>
 			<artifactId>fst</artifactId>
 			<version>2.56</version>
+		</dependency>
+		<dependency>
+			<groupId>com.onpositive.analitics.model</groupId>
+			<artifactId>com.onpositive.analitics.model</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.onpositive.parsing.rules</groupId>
+			<artifactId>com.onpositive.parsing.rules</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project> 

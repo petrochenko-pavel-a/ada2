@@ -1,14 +1,19 @@
 package com.onpositive.analitics.model.java;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import com.onpositive.analitics.model.IClass;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
+import com.onpositive.analitics.model.TypeProvider;
 
 public class JavaClass extends JavaType implements IClass{
 
@@ -16,27 +21,53 @@ public class JavaClass extends JavaType implements IClass{
 
 	protected JavaClass superClass;
 	protected Class<?>clazz;
+	
+	protected LinkedHashSet<JavaClass>subClasses=new LinkedHashSet<>();
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
+	public <T> T annotation(Class<T> clazz) {
+		if (Annotation.class.isAssignableFrom(clazz)) {
+			return clazz.cast(this.clazz.getAnnotation((Class) clazz));
+		}
+		return super.annotation(clazz);
+	}
+	
 	public JavaClass(Class<?> object) {
 		Class<?> superclass2 = object.getSuperclass();
 		if (superclass2!=null&&superclass2!=Object.class) {
 			superClass=(JavaClass) TypeResistry.getType(superclass2);
+			superClass.subClasses.add(this);
 		}
+		this.clazz=object;
 		for (Field f: object.getDeclaredFields()) {
 			if (f.getAnnotation(Property.class)!=null) {
-				this.properties.put(f.getName(), new FieldProperty(f, this, getType(f.getType()), f.getName(), Collection.class.isAssignableFrom(f.getType())));
+				this.properties.put(f.getName(), new FieldProperty(f, this, getType(f.getGenericType()), f.getName(), Collection.class.isAssignableFrom(f.getType())));
 			}
 		}
 		for (Method m: object.getDeclaredMethods()) {
 			if (m.getAnnotation(Property.class)!=null) {
-				this.properties.put(m.getName(), new MethodProperty(m, this, getType(m.getReturnType()), m.getName(), Collection.class.isAssignableFrom(m.getReturnType())));
+				this.properties.put(m.getName(), new MethodProperty(m, this, getType(m.getGenericReturnType()), m.getName(), Collection.class.isAssignableFrom(m.getReturnType())));
 			}
 		}
 	}
 
-	private JavaType getType(Class<?> type) {
-		// TODO Auto-generated method stub
-		return null;
+	private IType getType(Type type) {
+		if (type instanceof ParameterizedType) {
+			ParameterizedType tp=(ParameterizedType) type;
+			Type rawType = tp.getRawType();
+			if (rawType instanceof Class) {
+				if (Collection.class.isAssignableFrom((Class<?>) rawType)){
+					return (JavaType) TypeProvider.getType((Class)tp.getActualTypeArguments()[0]);
+				}
+			}
+		}
+		return  TypeProvider.getType((Class)type);
+	}
+	
+	@Override
+	public String toString() {
+		return this.clazz.getName();
 	}
 
 	@Override
@@ -64,6 +95,7 @@ public class JavaClass extends JavaType implements IClass{
 	}
 
 	@Override
+	@Property
 	public List<IProperty> properties() {
 		ArrayList<IProperty>res=new ArrayList<>();
 		res.addAll(this.properties.values());
@@ -71,6 +103,7 @@ public class JavaClass extends JavaType implements IClass{
 	}
 
 	@Override
+	@Property
 	public List<IProperty> allProperties() {
 		ArrayList<IProperty>res=new ArrayList<>();
 		if (this.superClass!=null) {

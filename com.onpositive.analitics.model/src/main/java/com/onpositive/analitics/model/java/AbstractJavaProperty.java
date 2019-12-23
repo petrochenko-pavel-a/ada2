@@ -10,7 +10,7 @@ public abstract class AbstractJavaProperty<T extends Member> implements IPropert
 
 	protected T member;
 	
-	public AbstractJavaProperty(T member, JavaClass domain, JavaType type, String name, boolean multiValue) {
+	public AbstractJavaProperty(T member, JavaClass domain, IType type, String name, boolean multiValue) {
 		super();
 		this.member = member;
 		this.domain = domain;
@@ -21,7 +21,7 @@ public abstract class AbstractJavaProperty<T extends Member> implements IPropert
 
 	protected JavaClass domain;
 	
-	protected JavaType type;
+	protected IType type;
 	
 	protected String name;
 	
