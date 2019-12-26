@@ -3,6 +3,8 @@ package com.ada.model;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.RowFilter.ComparisonType;
+
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
 import com.onpositive.clauses.IComparison;
@@ -24,6 +26,7 @@ public class PropertyComparison implements IComparison{
 
 	public PropertyComparison(Comparative cmp, IProperty prop) {
 		super();
+		
 		this.cmp = cmp;
 		this.prop = prop;
 	}
@@ -97,7 +100,13 @@ public class PropertyComparison implements IComparison{
 
 	@Override
 	public boolean match(Object property, IContext ct) {
-		// TODO Auto-generated method stub
+		Object value = this.prop.getValue(property);
+		
+		return this.cmp.operation.op(value, cmp.text);
+	}
+
+	@Override
+	public boolean isGoodForContainment() {
 		return false;
 	}
 }

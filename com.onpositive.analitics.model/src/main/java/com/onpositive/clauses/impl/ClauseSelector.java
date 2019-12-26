@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import com.ada.model.Context;
 import com.ada.model.IParsedEntity;
+import com.ada.model.TopValues;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
 import com.onpositive.clauses.IClause;
@@ -48,6 +49,12 @@ public final class ClauseSelector implements ISelector {
 	public static ClauseSelector produce(ISelector parent, IType type, Multiplicity m, IClause c) {
 		if (c instanceof PropertyFilter&&parent.multiplicity()==Multiplicity.SINGLE){
 			return null;
+		}
+		if (parent instanceof ClauseSelector) {
+			ClauseSelector s1=(ClauseSelector) parent;
+			if (s1.clause instanceof TopValues) {
+				return null;
+			}
 		}
 		return new ClauseSelector(parent, type, m, c);
 	}

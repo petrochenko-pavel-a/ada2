@@ -7,14 +7,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Message implements Serializable{
+import com.onpositive.analitics.model.IEntity;
+import com.onpositive.analitics.model.Labels;
+import com.onpositive.analitics.model.java.InverseOf;
+import com.onpositive.analitics.model.java.Property;
+
+@Labels("message")
+public class Message implements Serializable,IEntity{
 
 	public Message(User user,String text) {
 		this.from=user;
 		this.text=text;
 	}
 	
-	public static class Reaction implements Serializable{
+	@Labels("reaction")
+	public static class Reaction implements Serializable,IEntity{
 		/**
 		 * 
 		 */
@@ -31,8 +38,13 @@ public class Message implements Serializable{
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	@Property()
+	@InverseOf("messages")
 	protected User from;
 	protected String text;
+	
+	@Property
+	@InverseOf("messages")
 	protected Channel channel;
 	protected Reaction[] reactions;
 
@@ -48,6 +60,7 @@ public class Message implements Serializable{
 		return channel.messages.stream().filter(x->x.thread_ts==ts).collect(Collectors.toList());
 	}
 	
+	@Property
 	public List<Reaction>reactions(){
 		if (reactions==null) {
 			return Collections.emptyList();
@@ -56,7 +69,7 @@ public class Message implements Serializable{
 	}
 	
 	public Instant getDate() {
-		ts=ts.substring(0,ts.indexOf('.'));
+		String ts=this.ts.substring(0,this.ts.indexOf('.'));
 		long parseLong = Long.parseLong(ts);
 		Instant instant = Instant.ofEpochSecond(parseLong) ;
 		return instant;

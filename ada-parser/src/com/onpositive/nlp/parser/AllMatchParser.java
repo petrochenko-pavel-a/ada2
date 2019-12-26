@@ -6,7 +6,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
+
+import org.omg.PortableInterceptor.Interceptor;
 
 public class AllMatchParser<T> {
 
@@ -26,10 +29,11 @@ public class AllMatchParser<T> {
 
 	protected ArrayList<String> layersPriorities = new ArrayList<>();
 
+	
+	
 	@SuppressWarnings("unchecked")
 	public void add(IRule<? extends T> r) {
-
-		this.rules.add((IRule<T>) r);
+			this.rules.add((IRule<T>) r);
 	}
 
 	public void merge(AllMatchParser<T> parser) {
@@ -58,6 +62,7 @@ public class AllMatchParser<T> {
 
 	@SuppressWarnings("unchecked")
 	public void addToLayer(String layer, IRule<? extends T> r) {
+		
 		ArrayList<IRule<T>> arrayList = layers.get(layer);
 		if (arrayList == null) {
 			arrayList = new ArrayList<>();
@@ -155,13 +160,22 @@ public class AllMatchParser<T> {
 		}
 		return res;
 	}
+	
+	protected ArrayList<Consumer<Object>>interceptors=new ArrayList<>();
+	
+	public void addInterceptor(Consumer<Object>c) {
+		interceptors.add(c);
+	}
 
-	public static <T> List<List<T>> parse(List<T> t, IRule<T> rule) {
+	public static <T> List<List<T>> parse(List<T> t, IRule<T> rule,ArrayList<Consumer<Object>>ic) {
 		int size = t.size();
 
 		ArrayList<List<T>> sm = new ArrayList<List<T>>();
 		for (int i = size - 1; i >= 0; i--) {
 			RuleResult<T> consume = rule.consume(t, i);
+			if (consume!=null) {
+				ic.forEach(v->v.accept(consume.value));
+			}
 			if (consume != null) {
 				ArrayList<T> rs = new ArrayList<T>(t.subList(0, i));
 				rs.add(consume.value);
@@ -178,7 +192,8 @@ public class AllMatchParser<T> {
 	public <T> Collection<List<T>> parseRules(List<T> val, List<IRule<T>> rules) {
 		LinkedHashSet<List<T>> sm = new LinkedHashSet<List<T>>();
 		rules.forEach(r -> {
-			sm.addAll(parse(val, r));
+			List<List<T>> parse = parse(val, r,interceptors);
+			sm.addAll(parse);
 		});
 		LinkedHashSet<List<T>> res = new LinkedHashSet<>();
 		if (sm.size() > 0) {

@@ -3,11 +3,16 @@
   <groupId>com.onpositive.analitics.model</groupId>
   <artifactId>com.onpositive.analitics.model</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <properties>
+	<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
   <dependencies>
   	<dependency>
   		<groupId>com.onpositive.ada.parser</groupId>
   		<artifactId>ada-parser</artifactId>
   		<version>0.0.1-SNAPSHOT</version>
   	</dependency>
+  
   </dependencies>
 </project>

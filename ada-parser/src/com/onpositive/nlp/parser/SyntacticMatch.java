@@ -56,4 +56,9 @@ public class SyntacticMatch<T> implements IRule<T> {
 		pred.gatherLiterals(lit);
 	}
 
+	@Override
+	public String name() {
+		return name;
+	}
+
 }

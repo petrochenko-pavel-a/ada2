@@ -77,6 +77,7 @@ public class TopValues implements IClause{
 		Number m=(Number) vl;
 		return Double.valueOf(m.doubleValue());
 	}
+	private int limit=1;
 	@Override
 	public Stream<Object> perform(Stream<Object> selector, IContext ct) {
 		
@@ -119,13 +120,21 @@ public class TopValues implements IClause{
 				}
 				return v;
 			}
-		}).limit(1);
+		}).limit(getLimit());
 	}
 
 	
 	@Override
 	public String toString() {
 		return "PC("+property.toString()+","+direction.toString()+")";
+	}
+
+	public int getLimit() {
+		return limit;
+	}
+
+	public void setLimit(int limit) {
+		this.limit = limit;
 	}
 	
 }

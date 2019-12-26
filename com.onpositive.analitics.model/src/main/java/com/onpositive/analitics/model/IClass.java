@@ -17,4 +17,6 @@ public interface IClass extends IType{
 	boolean isPartOf(IClass b);
 	
 	Collection<? extends IClass>contained();
+
+	IProperty keyProperty();
 }

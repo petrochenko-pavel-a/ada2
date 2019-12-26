@@ -1,0 +1,10 @@
+message:
+  properties:
+     user:
+       associated: "write to"
+       example: "who writes about automobiles?"
+user:
+  properties:
+    messages:
+      example: Pavel Pleskov messages
+           

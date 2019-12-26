@@ -1,6 +1,6 @@
 // this rules performs basic operations like collapsing alternatives
 classes: [ property_value,named_date,dim_scalar,selector , clause, entity, className , number,comparative,measure,hasDomain,preposition,property,comparison]
-functions: [COMPARISON_NUMB2,OWNED2,COLLAPSE_PROPVAL,CONTAINED_SC,LAST_DATE,PREV_DATE,COMPARISON_NUMB,TAKE_PROPERTY,NUMP,NUMP2,PROPERTY_COMPARATIVE,OR,COLLAPSE_ENTITY,MEASURE,HAVING,CONTAINED,OWNED_BY,COMPARISON,FILTER,COMBINE,NOT,COMPARISON2,COMPARISON3,OR_COMPARISON,COMBINE_COMPARISON]
+functions: [COMPARISON_NUMB2,TOPN,OWNED2,COLLAPSE_PROPVAL,CONTAINED_SC,LAST_DATE,PREV_DATE,COMPARISON_NUMB,TAKE_PROPERTY,NUMP,NUMP2,PROPERTY_COMPARATIVE,OR,COLLAPSE_ENTITY,MEASURE,HAVING,CONTAINED,OWNED_BY,COMPARISON,FILTER,COMBINE,NOT,COMPARISON2,COMPARISON3,OR_COMPARISON,COMBINE_COMPARISON]
 layers: [initial,normal]
 rules:
  lastDate:
@@ -35,12 +35,14 @@ rules:
  propConversion2:
   when: "number"|"amount"|"count" ("of")? s=selector
   then: NUMP2(s)
-  example: "number of issues"    
+  example: "number of issues"
+        
  dimension:
   when: n=number s=selector
   then: MEASURE(n,s)
   example: "5 issues"
   layer: initial 
+
  comparison:
   when: v=comparative ("then")? m=measure
   then: COMPARISON(v,m)  
@@ -65,6 +67,7 @@ rules:
   when: s=selector "with"|"who_have"|"who_has"|"having"|"that_have"|"that_has" d=hasDomain
   then: HAVING(s,d)
   example: "repositories with more then 5 issues"
+
  not_having:
   when: s=selector "without" d=hasDomain
   then: HAVING(s,NOT(d))
@@ -130,5 +133,10 @@ rules:
   then: FILTER(p,s)
   example: "created by Gleb Borisov,  " 
   layer: normal  
-  //layer: normal
+ topN:
+  when: "top" n=number  s=selector
+  then: TOPN(n,s)
+  example: "created by Gleb Borisov,  " 
+  layer: initial 
+
   

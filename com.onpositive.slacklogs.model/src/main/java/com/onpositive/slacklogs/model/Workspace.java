@@ -26,12 +26,32 @@ public class Workspace implements Serializable {
 
 	@Property
 	ArrayList<User> users = new ArrayList<User>();
-	
+
 	@Property
 	ArrayList<Channel> channels = new ArrayList<Channel>();
 
+	public static Workspace getDebugInstance() {
+		if (readObject != null) {
+			return readObject;
+		}
+		try {
+			BufferedInputStream bufferedInputStream = new BufferedInputStream(
+					new FileInputStream("/Users/kor/git/ada2/com.onpositive.slacklogs.model/store-d.dat"));
+			ObjectInputStream objectInputStream = new ObjectInputStream(bufferedInputStream);
+			try {
+				readObject = (Workspace) objectInputStream.readObject();
+				init();
+				return readObject;
+			} finally {
+				objectInputStream.close();
+			}
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
 	public static Workspace getInstance() {
-		if (readObject!=null) {
+		if (readObject != null) {
 			return readObject;
 		}
 		try {
@@ -40,7 +60,7 @@ public class Workspace implements Serializable {
 			ObjectInputStream objectInputStream = new ObjectInputStream(bufferedInputStream);
 			try {
 				readObject = (Workspace) objectInputStream.readObject();
-				readObject.users.forEach(u -> u.workspace = readObject);
+				init();
 				return readObject;
 			} finally {
 				objectInputStream.close();
@@ -48,6 +68,28 @@ public class Workspace implements Serializable {
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
+	}
+
+	public static void init() {
+		readObject.users.forEach(u -> u.workspace = readObject);
+		readObject.messages().forEach(m -> {
+			if (m.from != null) {
+				if (m.from.messages == null) {
+					m.from.messages = new ArrayList<>();
+				}
+				m.from.messages.add(m);
+			}
+			if (m.reactions!=null) {
+				for (Reaction r:m.reactions) {
+					for (User u:r.users) {
+						if (u.reactions == null) {
+							u.reactions = new ArrayList<>();
+						}
+						u.reactions.add(r);
+					}
+				}
+			}
+		});
 	}
 
 	static FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
@@ -59,26 +101,28 @@ public class Workspace implements Serializable {
 		ArrayList<String> reactions = new ArrayList<>();
 		Map<User, Integer> mmm = new HashMap<>();
 		Map<User, Integer> mmm1 = new HashMap<>();
-		
+
 		instance.messages().stream().forEach(v -> {
 			List<Reaction> reactions2 = v.reactions();
 			for (Reaction c : reactions2) {
-				if (c.name.contains("minus")||c.name.contains("-1")||c.name.contains("toxic")||c.name.contains("heel")) {
+				if (c.name.contains("minus") || c.name.contains("-1") || c.name.contains("toxic")
+						|| c.name.contains("heel")) {
 					mmm.put(v.from, mmm.getOrDefault(v.from, 0) + c.count);
 				}
 			}
 			// reactions.addAll(reactions2.stream().map(x->x.name).collect(Collectors.toList()));
 		});
-//		instance.messages().stream().forEach(v -> {
-//			List<Reaction> reactions2 = v.reactions();
-//			for (Reaction c : reactions2) {
-//				if (c.name.contains("plus")||c.name.contains("+1")) {
-//					mmm.put(v.from, mmm.getOrDefault(v.from, 0) - c.count);
-//				}
-//			}
-//			// reactions.addAll(reactions2.stream().map(x->x.name).collect(Collectors.toList()));
-//		});
-		
+		// instance.messages().stream().forEach(v -> {
+		// List<Reaction> reactions2 = v.reactions();
+		// for (Reaction c : reactions2) {
+		// if (c.name.contains("plus")||c.name.contains("+1")) {
+		// mmm.put(v.from, mmm.getOrDefault(v.from, 0) - c.count);
+		// }
+		// }
+		// //
+		// reactions.addAll(reactions2.stream().map(x->x.name).collect(Collectors.toList()));
+		// });
+
 		Map<String, Integer> counts = reactions.parallelStream()
 				.collect(Collectors.toConcurrentMap(w -> w, w -> 1, Integer::sum));
 		Map<User, Integer> counts1 = sortByValue(mmm);
@@ -86,28 +130,28 @@ public class Workspace implements Serializable {
 		counts1.keySet().forEach(v -> {
 			if (v != null) {
 				Integer integer = counts1.get(v);
-				if (integer>100) {
-					//counts2.put(v, integer/2+integer*2000 / (v.messages().size() + 0.001));}
-//				
+				if (integer > 100) {
+					// counts2.put(v, integer/2+integer*2000 / (v.messages().size() + 0.001));}
+					//
 					double d = integer / (v.messages().size() + 0.001);
-					if (d>0.02&&v.messages().size()>50) {
-					System.out
-						.println(v.name + ":" + integer + ":" + d);
+					if (d > 0.02 && v.messages().size() > 50) {
+						System.out.println(v.name + ":" + integer + ":" + d);
 					}
-//				}
-			}}
+					// }
+				}
+			}
 		});
-//		Map<User, Double> counts3 = sortByValue(counts2);
-//		
-//		counts3.keySet().forEach(v -> {
-//			if (v != null) {
-//				Double integer = counts3.get(v);
-//				System.out
-//						.println(v.name + ":" + counts3.get(v));
-//				
-//			}
-//		});
-		//System.out.println(so);
+		// Map<User, Double> counts3 = sortByValue(counts2);
+		//
+		// counts3.keySet().forEach(v -> {
+		// if (v != null) {
+		// Double integer = counts3.get(v);
+		// System.out
+		// .println(v.name + ":" + counts3.get(v));
+		//
+		// }
+		// });
+		// System.out.println(so);
 		// System.out.println(sortByValue(counts));
 	}
 

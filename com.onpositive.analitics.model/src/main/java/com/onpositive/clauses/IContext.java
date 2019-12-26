@@ -10,5 +10,4 @@ public interface IContext {
 
 	Stream<Object> allInstancesOf(IType tp);
 
-	
 }

@@ -10,9 +10,13 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+
+import org.ocpsoft.prettytime.shade.edu.emory.mathcs.backport.java.util.Collections;
+
 import com.onpositive.analitics.model.IClass;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
+import com.onpositive.analitics.model.KeyProperty;
 import com.onpositive.analitics.model.TypeProvider;
 
 public class JavaClass extends JavaType implements IClass{
@@ -23,6 +27,8 @@ public class JavaClass extends JavaType implements IClass{
 	protected Class<?>clazz;
 	
 	protected LinkedHashSet<JavaClass>subClasses=new LinkedHashSet<>();
+
+	private IProperty keyProperty;
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
@@ -40,6 +46,7 @@ public class JavaClass extends JavaType implements IClass{
 			superClass.subClasses.add(this);
 		}
 		this.clazz=object;
+		TypeProvider.register(object,this);
 		for (Field f: object.getDeclaredFields()) {
 			if (f.getAnnotation(Property.class)!=null) {
 				this.properties.put(f.getName(), new FieldProperty(f, this, getType(f.getGenericType()), f.getName(), Collection.class.isAssignableFrom(f.getType())));
@@ -48,6 +55,11 @@ public class JavaClass extends JavaType implements IClass{
 		for (Method m: object.getDeclaredMethods()) {
 			if (m.getAnnotation(Property.class)!=null) {
 				this.properties.put(m.getName(), new MethodProperty(m, this, getType(m.getGenericReturnType()), m.getName(), Collection.class.isAssignableFrom(m.getReturnType())));
+			}
+		}
+		for (IProperty p:this.allProperties()) {
+			if (p.annotation(KeyProperty.class)!=null) {
+				this.keyProperty=p;
 			}
 		}
 	}
@@ -84,14 +96,16 @@ public class JavaClass extends JavaType implements IClass{
 
 	@Override
 	public boolean isSubtypeOf(IType domain) {
+		if (this.equals(domain)) {
+			return true;
+		}
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public String name() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.clazz.getSimpleName();
 	}
 
 	@Override
@@ -119,14 +133,19 @@ public class JavaClass extends JavaType implements IClass{
 		return false;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Collection<? extends IClass> contained() {
-		// TODO Auto-generated method stub
-		return null;
+		return Collections.emptyList();
 	}
 
 	public String id() {
 		return this.clazz.getName();
+	}
+
+	@Override
+	public IProperty keyProperty() {
+		return keyProperty;
 	}
 	
 }

@@ -1,19 +1,25 @@
 package com.onpositive.clauses.impl;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.ada.model.Context;
 import com.ada.model.IParsedEntity;
 import com.ada.model.conditions.IHasDomain;
+import com.onpositive.analitics.model.IClass;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
 import com.onpositive.clauses.IClause;
 import com.onpositive.clauses.IComparison;
 import com.onpositive.clauses.IContext;
+import com.onpositive.clauses.IHasContext;
 import com.onpositive.clauses.ISelector;
 
-public class PropertyFilter implements IClause,IHasDomain {
+public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext {
 
 	protected final IProperty prop;
 	@Override
@@ -82,7 +88,7 @@ public class PropertyFilter implements IClause,IHasDomain {
 	}
 
 	@Override
-	public IType domain() {
+	public IClass domain() {
 		return prop.domain();
 	}
 
@@ -103,5 +109,50 @@ public class PropertyFilter implements IClause,IHasDomain {
 	@Override
 	public Stream<Object> perform(Stream<Object> selector, IContext ct) {		
 		return selector.filter(x->predicate.match(prop.getValue(x),ct));
+	}
+
+	@Override
+	public String name() {
+		return toString();
+	}
+
+	@Override
+	public IType range() {
+		return prop.range();
+	}
+
+	@Override
+	public String id() {
+		return toString();
+	}
+
+	@Override
+	public int complexity() {
+		return 0;
+	}
+
+	@Override
+	public boolean multiValue() {
+		return prop.multiValue();
+	}
+	
+	IContext ct;
+	
+	@Override
+	public Object getValue(Object obj) {
+		if (obj instanceof Collection) {
+			 return perform(((Collection)obj).stream(),ct).collect(Collectors.toSet());
+		}
+		Set<Object> collect = perform(Collections.singleton(obj).stream(),ct).collect(Collectors.toSet());
+		return collect;
+	}
+
+	private Stream<Object> performFlt(Stream<Object> stream, IContext ct2) {
+		return stream.filter(x->this.predicate.match(x, ct));
+	}
+
+	@Override
+	public void setContext(IContext ct) {
+		this.ct=ct;
 	}	
 }

@@ -49,13 +49,19 @@ public class EntityRecognizer implements IEntityRecognizer {
 	}
 
 	public void addEntity(String entityName, Object value) {
-		if (entityName.equals("More texts needed")){
+		if (entityName.length()==0) {
 			return;
 		}
 		if (entityName.indexOf(' ') != -1) {
 			String[] split = entityName.split(" ");
 			if (split.length > 1) {
 				for (String sa: split){
+					if (sa.isEmpty()) {
+						continue;
+					}
+					if (sa.length()<3) {
+						continue;
+					}
 					if (Character.toLowerCase(sa.charAt(0))!=sa.charAt(0)){
 						innerEnd(sa.toLowerCase(),value);
 					}
@@ -64,6 +70,7 @@ public class EntityRecognizer implements IEntityRecognizer {
 		}
 		
 		entityName = entityName.toLowerCase();		
+		innerEnd(entityName, value);
 		entityName = entityName.replace(" ", "");
 		entityName = entityName.replace("_", "");
 		entityName = entityName.replace("-", "");
@@ -100,6 +107,7 @@ public class EntityRecognizer implements IEntityRecognizer {
 			
 			return null;
 		}
+		
 		boolean startsWithNumb=false;
 		if (tokens.size()>0&&(tokens.get(0) instanceof Number)){
 			startsWithNumb=true;
@@ -112,22 +120,22 @@ public class EntityRecognizer implements IEntityRecognizer {
 			return null;
 		}
 		String lowerCase = bld.toString().toLowerCase();
-		// System.out.println(lowerCase);
+		//System.out.println(lowerCase);
 		
 		ArrayList<Object> arrayList = entities.get(lowerCase);
-		if (!startsWithNumb&&arrayList == null && ((lowerCase.length() > 3&&tokens.size()==1)||(lowerCase.length() > 6&&tokens.size()>1))&& !AllMatchParser.isDEBUG()) {
-			List<Word> correct = sp.getSuggestions(lowerCase, 100);
-			if (correct != null && !correct.isEmpty()) {
-				String corr = correct.get(0).getWord().toLowerCase();
-				arrayList = entities.get(corr);
-				if (tokens.size() > 1) {
-					String string = arrayList.iterator().next().toString();
-					if (string.indexOf(' ') == -1) {
-						return null;
-					}
-				}
-			}
-		}
+//		if (!startsWithNumb&&arrayList == null && ((lowerCase.length() > 3&&tokens.size()==1)||(lowerCase.length() > 6&&tokens.size()>1))&& !AllMatchParser.isDEBUG()) {
+//			List<Word> correct = sp.getSuggestions(lowerCase, 100);
+//			if (correct != null && !correct.isEmpty()) {
+//				String corr = correct.get(0).getWord().toLowerCase();
+//				arrayList = entities.get(corr);
+//				if (tokens.size() > 1) {
+//					String string = arrayList.iterator().next().toString();
+//					if (string.indexOf(' ') == -1) {
+//						return null;
+//					}
+//				}
+//			}
+//		}
 		return arrayList;
 	}
 }

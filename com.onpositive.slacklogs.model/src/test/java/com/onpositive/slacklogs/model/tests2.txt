@@ -1,0 +1,24 @@
+Characteristics:
+
+-------------
+  activity
+  popularity 
+  novelty
+-------------
+
+  usually (time points)
+  often
+  rare
+  never
+
+-------------
+
+Кто часто пишет в random b?
+
+-------------
+
+Когда тати в последний раз писала в random b ?
+Сколько сообщений тати написала в random b за прошедший год ? 
+
+ 
+ 

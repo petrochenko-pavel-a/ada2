@@ -13,4 +13,7 @@ public interface IComparison extends IHasDomain{
 
 	boolean match(Object property, IContext ct);
 
+	default boolean isGoodForContainment() {
+		return true;
+	}
 }

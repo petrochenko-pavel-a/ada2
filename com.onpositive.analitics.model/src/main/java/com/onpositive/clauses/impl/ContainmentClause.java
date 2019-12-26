@@ -17,14 +17,14 @@ import com.onpositive.clauses.IContext;
 import com.onpositive.clauses.ISelector;
 import com.onpositive.clauses.Multiplicity;
 
-public class ContainmentClause implements IClause{
+public class ContainmentClause implements IClause {
 
 	protected IComparison contained;
-	
+
 	protected boolean in;
 
 	private IProperty property;
-	
+
 	public IProperty getProperty() {
 		return property;
 	}
@@ -62,21 +62,22 @@ public class ContainmentClause implements IClause{
 		return true;
 	}
 
-	public ContainmentClause(IHasDomain contained,boolean in,IProperty property) {
+	public ContainmentClause(IHasDomain contained, boolean in, IProperty property) {
 		super();
-		this.property=property;
-		this.in=in;
-		if (!(contained instanceof IComparison)){
-			this.contained=new Comparison(contained, new Comparative(contained instanceof Measure?Kind.EQUAL:Kind.IN, "in"));
-		}
-		else{
-		this.contained = (IComparison) contained;
+
+		this.property = property;
+		this.in = in;
+		if (!(contained instanceof IComparison)) {
+			this.contained = new Comparison(contained,
+					new Comparative(contained instanceof Measure ? Kind.EQUAL : Kind.IN, "in"));
+		} else {
+			this.contained = (IComparison) contained;
 		}
 	}
 
 	@Override
 	public ISelector produce(ISelector s) {
-		if (this.contained.isNotSolved()){
+		if (this.contained.isNotSolved()) {
 			return null;
 		}
 		return ClauseSelector.produce(s, s.domain(), Multiplicity.MULTIPLE, this);
@@ -84,10 +85,10 @@ public class ContainmentClause implements IClause{
 
 	@Override
 	public String toString() {
-		if (this.in){
-			return "IN("+contained+")";
+		if (this.in) {
+			return "IN(" + contained + ")";
 		}
-		return "WITH("+contained+")";
+		return "WITH(" + contained + ")";
 	}
 
 	@Override
@@ -97,7 +98,7 @@ public class ContainmentClause implements IClause{
 
 	@Override
 	public List<IProperty> usedProperties() {
-		if (property==null){
+		if (property == null) {
 			return Collections.emptyList();
 		}
 		return Collections.singletonList(property);

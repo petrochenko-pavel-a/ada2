@@ -21,4 +21,6 @@ public interface IProperty extends INamed{
 	default <T> T annotation(Class<T>clazz) {
 		return null;
 	}
+
+	default boolean isLazy() { return false;}
 }

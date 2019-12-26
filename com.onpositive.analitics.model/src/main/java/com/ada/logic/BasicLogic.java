@@ -56,12 +56,27 @@ public class BasicLogic {
 	public static IHasDomain nextDate(GenericTime t) {
 		return t.next();
 	}
+	
+	
 
 	@Clause("COMPARISON_NUMB2")
 	public static IClause nextDate(Number n, IProperty p) {
 		if (p.range().equals(Builtins.INTEGER) || p.range().equals(Builtins.NUMBER)) {
 			return PropertyFilter.propertyFilter(p,
 					new Comparison(new NumberInDomain(p.range(), n), new Comparative(Kind.EQUAL, "eq")));
+		}
+		return null;
+	}
+	
+	@Clause("TOPN")
+	public static ISelector topN(Number n,ISelector s) {
+		if (s instanceof ClauseSelector) {
+			ClauseSelector sm=(ClauseSelector) s;
+			if (sm.clause() instanceof TopValues) {
+				TopValues mm=(TopValues)sm.clause();
+				mm.setLimit(n.intValue());
+			}
+			return s;
 		}
 		return null;
 	}
@@ -200,7 +215,16 @@ public class BasicLogic {
 				}
 				
 			}
-			if (has(base.properties(), x -> x.hasCompatibleRange(parts.domain())) && parts.clazz().isPresent()) {
+			if (parts instanceof IComparison) {
+				IComparison cm=(IComparison) parts;
+				if(! cm.isGoodForContainment()) {
+					return null;
+				}
+			}
+			if (has(base.properties(), x -> {
+				IType domain = parts.domain();
+				return x.hasCompatibleRange(domain);
+			}) && parts.clazz().isPresent()) {
 				return new ContainmentClause(parts, false,
 						InverseProperty.createInverseProperty(PropertyAdapter.findPath(parts.clazz().get(), base.clazz().get())))
 								.produce(base);
@@ -342,7 +366,7 @@ public class BasicLogic {
 	}
 
 	@Clause("FILTER")
-	public static PropertyFilter propertyFilter(IProperty prop, IHasDomain predicate) {
+	public static Object propertyFilter(IProperty prop, IHasDomain predicate) {
 		IComparison c = null;
 		if (predicate instanceof ISelector) {
 			Comparative comparative = new Comparative(Kind.IN, "in");
@@ -371,10 +395,29 @@ public class BasicLogic {
 			}
 		}
 
-		if (!c.domain().isSubtypeOf(prop.range())) {
-			if (prop.domain().isSubtypeOf(c.domain())) {
+		IType domain = c.domain();
+		IType range = prop.range();
+		if (!domain.isSubtypeOf(range)) {
+			if (prop.domain().isSubtypeOf(domain)) {
 				prop = InverseProperty.createInverseProperty(prop);
 			} else {
+				//prop = InverseProperty.createInverseProperty(prop);
+				
+				//if (prop.)
+				//check for containment
+				if (range instanceof IClass) {
+					IClass clz=(IClass) range;
+					List<IProperty> collect = clz.allProperties().stream().filter(x->x.range().isSubtypeOf(domain)).collect(Collectors.toList());
+					if (!collect.isEmpty()&&collect.size()==1) {
+						IProperty ps=collect.iterator().next();
+						ArrayList<IProperty> path = new ArrayList<>();
+						path.add(prop);
+						path.add(PropertyFilter.propertyFilter(ps, c));
+						PathProperty pm=new PathProperty(path);
+						
+						return pm; 
+					}
+				}
 				return null;
 			}
 		}

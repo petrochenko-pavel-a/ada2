@@ -3,6 +3,7 @@ package com.onpositive.clauses.impl;
 import com.onpositive.analitics.model.IClass;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
+import com.onpositive.analitics.model.java.InverseOf;
 
 public class InverseProperty implements IProperty{
 
@@ -10,6 +11,11 @@ public class InverseProperty implements IProperty{
 		if (original instanceof InverseProperty){
 			InverseProperty p=(InverseProperty) original;
 			return p.original;
+		}
+		InverseOf annotation = original.annotation(InverseOf.class);
+		if (annotation!=null) {
+			IClass tp=(IClass) original.range();
+			return tp.property(annotation.value()).get();
 		}
 		return new InverseProperty(original);
 	}

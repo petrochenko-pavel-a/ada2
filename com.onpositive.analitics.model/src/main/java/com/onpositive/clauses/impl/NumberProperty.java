@@ -53,7 +53,14 @@ public class NumberProperty implements IProperty{
 
 	@Override
 	public Object getValue(Object obj) {
-		Collection<?>z=(Collection<?>) ps.getValue(obj);
-		return z.size();
+		Object value = ps.getValue(obj);
+		if (value instanceof Collection) {
+			Collection<?>z=(Collection<?>) value;
+			return z.size();	
+		}
+		if (value==null) {
+			return 0;
+		}
+		return 1;
 	}
 }

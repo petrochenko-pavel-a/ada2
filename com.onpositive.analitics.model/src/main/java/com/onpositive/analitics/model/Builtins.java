@@ -51,6 +51,11 @@ public class Builtins {
 		public List<IClass> contained() {
 			return Collections.emptyList();
 		}
+
+		@Override
+		public IProperty keyProperty() {
+			return null;
+		}
 	}
 
 	public static final BuiltinType NUMBER=new BuiltinType("number",true);

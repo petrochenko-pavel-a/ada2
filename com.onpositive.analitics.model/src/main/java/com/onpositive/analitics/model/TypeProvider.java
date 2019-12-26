@@ -41,4 +41,7 @@ public class TypeProvider {
 	public static IType getType(Collection<Object> o) {
 		return null;		
 	}
+	public static void register(Class<?> object, IType javaClass) {
+		classes.put(object, javaClass);
+	}
 }

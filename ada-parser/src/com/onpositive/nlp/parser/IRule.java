@@ -8,4 +8,6 @@ public interface IRule<T> {
 	RuleResult<T> consume(List<T>elements,int position);
 
 	void gatherLiterals(Consumer<String>lit);
+	
+	String name();
 }

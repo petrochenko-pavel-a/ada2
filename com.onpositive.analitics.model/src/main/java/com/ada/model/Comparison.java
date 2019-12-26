@@ -2,24 +2,31 @@ package com.ada.model;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.ada.model.conditions.IHasDomain;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
+import com.onpositive.clauses.IClause;
 import com.onpositive.clauses.IComparison;
 import com.onpositive.clauses.IContext;
 import com.onpositive.clauses.ISelector;
 import com.onpositive.clauses.IValue;
 import com.onpositive.clauses.impl.AllInstancesOf;
 import com.onpositive.clauses.impl.ClauseSelector;
+import com.onpositive.clauses.impl.InverseProperty;
 import com.onpositive.clauses.impl.MapByProperty;
+import com.onpositive.clauses.impl.PropertyFilter;
 import com.onpositive.clauses.impl.SingleSelector;
 
-public class Comparison implements IComparison{
+public class Comparison implements IComparison {
 
 	protected IHasDomain comparisonTarget;
 	protected Comparative comparative;
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -63,7 +70,7 @@ public class Comparison implements IComparison{
 	}
 
 	protected boolean notSolved;
-	
+
 	public boolean isNotSolved() {
 		return notSolved;
 	}
@@ -71,14 +78,15 @@ public class Comparison implements IComparison{
 	public void setNotSolved(boolean notSolved) {
 		this.notSolved = notSolved;
 	}
-    public Comparison solve(IProperty p){
+
+	public Comparison solve(IProperty p) {
 		ISelector produce = new MapByProperty(p).produce((ISelector) comparisonTarget);
-		if (produce!=null){
-		return new Comparison(produce, comparative);    	
+		if (produce != null) {
+			return new Comparison(produce, comparative);
 		}
 		return null;
-    }
-	
+	}
+
 	public Comparison(IHasDomain comparisonTarget, Comparative comparative) {
 		super();
 		this.comparisonTarget = comparisonTarget;
@@ -92,14 +100,15 @@ public class Comparison implements IComparison{
 
 	@Override
 	public String toString() {
-		if (notSolved){
-			return "NOT_SOLVED("+comparative.operation.toString()+","+comparisonTarget.toString()+")";
+		if (notSolved) {
+			return "NOT_SOLVED(" + comparative.operation.toString() + "," + comparisonTarget.toString() + ")";
 		}
-		return "("+comparative.operation.toString()+","+comparisonTarget.toString()+")";
+		return "(" + comparative.operation.toString() + "," + comparisonTarget.toString() + ")";
 	}
 
 	public Comparison negate() {
-		Comparison comparison = new Comparison(comparisonTarget, new Comparative(comparative.operation.negate(), "not "+comparative.text));
+		Comparison comparison = new Comparison(comparisonTarget,
+				new Comparative(comparative.operation.negate(), "not " + comparative.text));
 		comparison.setNotSolved(notSolved);
 		return comparison;
 	}
@@ -114,46 +123,66 @@ public class Comparison implements IComparison{
 		return Collections.emptyList();
 	}
 
+	protected WeakHashMap<ISelector, Set<Object>> cache = new WeakHashMap<>();
+
+	@SuppressWarnings("unchecked")
 	@Override
-	public boolean match(Object property, IContext ct) {		
+	public boolean match(Object property, IContext ct) {
 		IHasDomain comparisonTarget2 = this.comparisonTarget;
-		
-		if (comparisonTarget2 instanceof IValue){
-			Object val=null;
-			if (comparisonTarget2 instanceof ISelector){
-				val=((ISelector) comparisonTarget2).values(ct).collect(Collectors.toSet());
-			}
-			else{
-				if (comparisonTarget2 instanceof NumberInDomain){
-					val=((NumberInDomain) comparisonTarget2).getNmb();
+
+		if (comparisonTarget2 instanceof IValue) {
+			Object val = null;
+			if (comparisonTarget2 instanceof ISelector) {
+				if (cache.containsKey(comparisonTarget2)) {
+					val = cache.get(comparisonTarget2);
+				} else {
+					val = ((ISelector) comparisonTarget2).values(ct).collect(Collectors.toSet());
+					cache.put((ISelector)comparisonTarget2, (Set<Object>) val);
 				}
-				else if (comparisonTarget2 instanceof PropertyValue){
-					val=((PropertyValue) comparisonTarget2).getValue();
-				}
-				else if (comparisonTarget2 instanceof Measure){
-					Measure ssm=(Measure) comparisonTarget2;
-					if (property!=null){
+			} else {
+				if (comparisonTarget2 instanceof NumberInDomain) {
+					val = ((NumberInDomain) comparisonTarget2).getNmb();
+				} else if (comparisonTarget2 instanceof PropertyValue) {
+					val = ((PropertyValue) comparisonTarget2).getValue();
+				} else if (comparisonTarget2 instanceof Measure) {
+					Measure ssm = (Measure) comparisonTarget2;
+					if (property != null) {
 						ISelector selector = ssm.getSelector();
-						val=ssm.amount;
-						if (selector instanceof ClauseSelector){
-							ClauseSelector mm=(ClauseSelector) selector;
-							ClauseSelector cloneWithNewRoot = mm.cloneWithNewRoot(new SingleSelector(property, mm.domain()));
-							property=cloneWithNewRoot.values(ct).collect(Collectors.toSet());
-						}
-						else if (selector instanceof AllInstancesOf){
-							
-						}
-						else{
+						val = ssm.amount;
+						if (selector instanceof ClauseSelector) {
+							ClauseSelector mm = (ClauseSelector) selector;
+							ClauseSelector cloneWithNewRoot = mm
+									.cloneWithNewRoot(new SingleSelector(property, mm.domain()));
+							property = cloneWithNewRoot.values(ct).collect(Collectors.toSet());
+						} else if (selector instanceof AllInstancesOf) {
+
+						} else {
 							throw new IllegalStateException("unexpected selector");
 						}
-						
+
 					}
 				}
 			}
-			if (val==null){
+			if (val == null) {
 				throw new IllegalStateException("Not implemented yet");
 			}
-			return comparative.operation.op(property,val);
+			return comparative.operation.op(property, val);
+		}
+		if (comparisonTarget2 instanceof IClause) {
+			IClause cm = (IClause) comparisonTarget2;
+			Stream<Object> values = null;
+			if (cm instanceof PropertyFilter) {
+				PropertyFilter pm = (PropertyFilter) cm;
+				if (pm.property() instanceof InverseProperty) {
+					InverseProperty pa = (InverseProperty) pm.property();
+					values = cm.produce(new AllInstancesOf(pa.range())).values(ct);
+				}
+			}
+			if (values == null) {
+				values = cm.produce(new AllInstancesOf(comparisonTarget2.domain())).values(ct);
+			}
+			Set<Object> collect = values.collect(Collectors.toSet());
+			return comparative.operation.op(property, collect);
 		}
 		throw new IllegalStateException();
 	}
