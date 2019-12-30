@@ -1,6 +1,8 @@
 eclipse.preferences.version=1
 encoding//src/main/java=windows-1251
 encoding//src/main/resources=windows-1251
+encoding//src/main/xtext-gen=windows-1251
 encoding//src/test/java=windows-1251
 encoding//src/test/resources=windows-1251
+encoding//src/test/xtext-gen=windows-1251
 encoding/<project>=windows-1251

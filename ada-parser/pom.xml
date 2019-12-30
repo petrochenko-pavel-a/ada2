@@ -6,6 +6,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<properties>
         <src.dir>src</src.dir>
+         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 	<build>
 		
@@ -38,11 +39,13 @@
 			<version>1.2.2</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
 <dependency>
     <groupId>com.google.guava</groupId>
     <artifactId>guava</artifactId>
-    <version>28.1-jre</version>
+    <version>28.0-jre</version>
 </dependency>
+
 
 		<dependency>
 			<groupId>com.onpositive</groupId>

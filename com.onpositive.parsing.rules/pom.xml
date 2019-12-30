@@ -216,6 +216,14 @@
 			<version>${xtextVersion}</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.eclipse.xtext/org.eclipse.xtext.junit4 -->
+<dependency>
+    <groupId>org.eclipse.xtext</groupId>
+    <artifactId>org.eclipse.xtext.junit4</artifactId>
+    <version>2.10.0</version>
+    <scope>test</scope>
+</dependency>
+		
 		<dependency>
 			<groupId>org.eclipse.xtext</groupId>
 			<artifactId>org.eclipse.xtext</artifactId>
@@ -225,6 +233,12 @@
 			<groupId>org.eclipse.xtext</groupId>
 			<artifactId>org.eclipse.xtext.xbase</artifactId>
 			<version>${xtextVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.xtext</groupId>
