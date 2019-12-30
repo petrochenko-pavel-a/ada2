@@ -33,6 +33,10 @@ public interface ISelector extends IValue{
 		return new AndSelector(new LinkedHashSet<>(Arrays.asList(new ISelector[]{this,pr})));
 	}
 	
+	public default ISelector optimize() {
+		return this;
+	}
+	
 	default List<IProperty>properties(){
 		IType domain = domain();
 		if (domain instanceof IClass){

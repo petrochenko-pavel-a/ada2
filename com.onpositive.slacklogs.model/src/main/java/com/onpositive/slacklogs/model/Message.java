@@ -2,6 +2,8 @@ package com.onpositive.slacklogs.model;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -11,8 +13,10 @@ import com.onpositive.analitics.model.IEntity;
 import com.onpositive.analitics.model.Labels;
 import com.onpositive.analitics.model.java.InverseOf;
 import com.onpositive.analitics.model.java.Property;
+import com.onpositive.analitics.model.java.TimeProp;
 
-@Labels("message")
+@Labels({"message","сообщение","пост","писулька"})
+@TimeProp("date")
 public class Message implements Serializable,IEntity{
 
 	public Message(User user,String text) {
@@ -39,6 +43,7 @@ public class Message implements Serializable,IEntity{
 	private static final long serialVersionUID = 1L;
 	
 	@Property()
+	@Labels({"from","by"})
 	@InverseOf("messages")
 	protected User from;
 	protected String text;
@@ -68,10 +73,12 @@ public class Message implements Serializable,IEntity{
 		return Arrays.asList(reactions);
 	}
 	
-	public Instant getDate() {
+	@Property
+	@Labels("date")
+	public LocalDateTime date() {
 		String ts=this.ts.substring(0,this.ts.indexOf('.'));
 		long parseLong = Long.parseLong(ts);
 		Instant instant = Instant.ofEpochSecond(parseLong) ;
-		return instant;
+		return LocalDateTime.ofInstant(instant, ZoneId.of("UTC"));
 	}
 }

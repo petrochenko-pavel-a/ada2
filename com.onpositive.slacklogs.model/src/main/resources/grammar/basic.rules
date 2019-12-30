@@ -1,12 +1,32 @@
 // this rules performs basic operations like collapsing alternatives
 classes: [ property_value,named_date,dim_scalar,selector , clause, entity, className , number,comparative,measure,hasDomain,preposition,property,comparison]
-functions: [COMPARISON_NUMB2,TOPN,OWNED2,COLLAPSE_PROPVAL,CONTAINED_SC,LAST_DATE,PREV_DATE,COMPARISON_NUMB,TAKE_PROPERTY,NUMP,NUMP2,PROPERTY_COMPARATIVE,OR,COLLAPSE_ENTITY,MEASURE,HAVING,CONTAINED,OWNED_BY,COMPARISON,FILTER,COMBINE,NOT,COMPARISON2,COMPARISON3,OR_COMPARISON,COMBINE_COMPARISON]
-layers: [initial,normal]
+functions: [TAKE_FIRST,TAKE_LAST,TAKE_FIRST_N,TAKE_LAST_N,INVERSE_COMPARISON,LAST_RESORT,DATE_P,DATE_PB,DATE_PA,DATE_B,DATE_F,DATE_S,COMP_S,COMPARISON_NUMB2,TOPN,OWNED2,COLLAPSE_PROPVAL,CONTAINED_SC,LAST_DATE,PREV_DATE,COMPARISON_NUMB,TAKE_PROPERTY,NUMP,NUMP2,PROPERTY_COMPARATIVE,OR,COLLAPSE_ENTITY,MEASURE,HAVING,CONTAINED,OWNED_BY,COMPARISON,FILTER,COMBINE,NOT,COMPARISON2,COMPARISON3,OR_COMPARISON,COMBINE_COMPARISON]
+layers: [initial,normal,last]
 rules:
  lastDate:
   when: "last" n=named_date 
   then: LAST_DATE(n)
   example: "last January" 
+  layer: initial
+ dateSel0:
+  when: s=comparison "in"|"за" d=named_date
+  then: DATE_S(s,d)
+  example: "created by Gleb Borisov,  " 
+  layer: initial    
+ dateSel:
+  when: s=selector "in"|"за" d=named_date
+  then: DATE_S(s,d)
+  example: "created by Gleb Borisov,  " 
+  layer: initial  
+ dateBefore:
+  when: s=selector "before" d=named_date
+  then: DATE_B(s,d)
+  example: "created by Gleb Borisov,  " 
+  layer: initial 
+ dateAfter:
+  when: s=selector "after" d=named_date
+  then: DATE_F(s,d)
+  example: "created by Gleb Borisov,  " 
   layer: initial
  prevDate:
   when: "previous" n=named_date 
@@ -67,6 +87,10 @@ rules:
   when: s=selector "with"|"who_have"|"who_has"|"having"|"that_have"|"that_has" d=hasDomain
   then: HAVING(s,d)
   example: "repositories with more then 5 issues"
+ having2:
+  when: "у" s=selector d=hasDomain
+  then: HAVING(s,d)
+  example: "repositories with more then 5 issues"
 
  not_having:
   when: s=selector "without" d=hasDomain
@@ -124,6 +148,10 @@ rules:
   when:  pv=property_value s=selector
   then:  COLLAPSE_PROPVAL(pv,s)
   example: "open issues"
+ inverseComparison:
+  when:  "not" c=comparison
+  then: INVERSE_COMPARISON(c)
+  example: "open issues" 
  selectorOwning:
   when: e=entity s=selector
   then: OWNED2(e,s)
@@ -138,5 +166,54 @@ rules:
   then: TOPN(n,s)
   example: "created by Gleb Borisov,  " 
   layer: initial 
-
+ compSel:
+  when: s=selector c=comparison
+  then: COMP_S(s,c)
+  example: "created by Gleb Borisov,  " 
+  layer: normal
+ dateSel2:
+  when: s=selector "in"|"за" d=named_date
+  then: DATE_S(s,d)
+  example: "created by Gleb Borisov,  " 
+  layer: normal
+ prop_date1:
+  when: p=property "in" d=named_date
+  then: DATE_P(p,d)
+  example: "created by Gleb Borisov,  " 
+  layer: normal    
+ prop_date2:
+  when: p=property "before" d=named_date
+  then: DATE_PB(p,d)
+  example: "created by Gleb Borisov,  " 
+  layer: normal 
+ prop_date3:
+  when: p=property "after" d=named_date
+  then: DATE_PA(p,d)
+  example: "created by Gleb Borisov,  " 
+  layer: normal   
+ last_resort:
+  when: s=selector c=comparison
+  then: LAST_RESORT(s,c)
+  example: "created by Gleb Borisov,  " 
+  layer: last    
+ sort_sel:
+  when: "first" s=selector        
+  then: TAKE_FIRST(s)
+  example: "created by Gleb Borisov,  " 
+  layer: last
+ sort_sel2:
+  when: "last" s=selector        
+  then: TAKE_LAST(s)       
+  example: "created by Gleb Borisov,  " 
+  layer: last   
+ sort_sel_n:
+  when: "first" n=number s=selector        
+  then: TAKE_FIRST_N(s,n)
+  example: "created by Gleb Borisov,  " 
+  layer: last
+ sort_sel_n:
+  when: "last" n=number s=selector        
+  then: TAKE_LAST_N(s,n)       
+  example: "created by Gleb Borisov,  " 
+  layer: last   
   

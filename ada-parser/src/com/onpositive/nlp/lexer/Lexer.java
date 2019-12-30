@@ -1,5 +1,4 @@
 package com.onpositive.nlp.lexer;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,7 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import com.onpositive.parsers.dates.IFreeFormDate;
+import com.onpositive.parsers.dates.FreeFormDateRange;
 import com.onpositive.parsers.dates.MultiRegexDateParser;
 import com.onpositive.parsers.dates.MultiRegexDateParser.DateParserType;
 import com.onpositive.parsers.dates.templates.DateTemplate.DatesMap;
@@ -52,6 +51,7 @@ public class Lexer {
 	}
 	
 	public List<List<Object>> lex(String str) {
+		str=PhrasesReplacements.preprocess(str);
 		DatesMap parseToMap = inst.parseToMap(str,LocalDate.now());
 		ArrayList<DateAndPosition> datesArray = parseToMap.getDatesWithPositions();
 		int a=0;
@@ -64,7 +64,23 @@ public class Lexer {
 			if (!str.isEmpty()) {
 				result.addAll(PrimitiveTokenizer.tokenize(substring));
 			}
+			if (f.date instanceof FreeFormDateRange) {
+				FreeFormDateRange m=(FreeFormDateRange) f.date;
+				if (m.getFrom()==null) {
+					result.add("before");
+					result.add(m.getTo());
+				}
+				else if (m.getTo()==null) {
+					result.add("after");
+					result.add(m.getFrom());
+				}	
+				else {
+					result.add(m);
+				}
+			}
+			else {
 			result.add(f.date);
+			}
 			startOffset=go_right(str,f.start+f.length);
 			a++;
 		}
@@ -75,12 +91,14 @@ public class Lexer {
 				result.addAll(PrimitiveTokenizer.tokenize(substring));
 			}
 		}
+	
 		return new ArrayList<>(doRecognition(result));
 	}
 
+	
 	@SuppressWarnings("unchecked")
 	private Collection<List<Object>> doRecognition(List<? extends Object> tokenize) {
-		
+			
 		LinkedHashSet<List<Object>> results = new LinkedHashSet<>();
 		if (tokenize.isEmpty()) {
 			results.add((List<Object>) tokenize);
@@ -134,7 +152,6 @@ public class Lexer {
 		separators.add("_");
 		separators.add("-");
 	}
-
 	
 	
 	private static List<? extends Object> subTokens(List<? extends Object> tokenize, int i, int j) {

@@ -3,15 +3,14 @@ package com.ada.model;
 import java.util.Collections;
 import java.util.List;
 
-import com.ada.model.conditions.IHasDomain;
 import com.onpositive.analitics.model.Builtins;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
-import com.onpositive.nlp.lexer.DatePart;
+import com.onpositive.parsers.dates.IFreeFormDate;
 
 public class GenericTime implements IScalarWithDimension{
 
-	protected DatePart part;
+	protected IFreeFormDate part;
 	
 	@Override
 	public int hashCode() {
@@ -38,7 +37,7 @@ public class GenericTime implements IScalarWithDimension{
 		return true;
 	}
 
-	public GenericTime(DatePart part) {
+	public GenericTime(IFreeFormDate part) {
 		super();
 		this.part = part;
 	}
@@ -63,16 +62,10 @@ public class GenericTime implements IScalarWithDimension{
 		return part.toString();
 	}
 
-	public IHasDomain last() {
-		return new GenericTime(part.shift(-1));
+	public IFreeFormDate time() {
+		return part;
 	}
 
-	public IHasDomain prev() {
-		return new GenericTime(part.shift(-1));
-	}
 
-	public IHasDomain next() {
-		return new GenericTime(part.shift(1));
-	}
 
 }

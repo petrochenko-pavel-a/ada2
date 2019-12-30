@@ -181,7 +181,7 @@ public class AllMatchParser<T> {
 				rs.add(consume.value);
 				rs.addAll(t.subList(i + consume.len, t.size()));
 				sm.add(rs);
-
+				//System.out.println(rs+":"+rule.name());	
 			}
 		}
 

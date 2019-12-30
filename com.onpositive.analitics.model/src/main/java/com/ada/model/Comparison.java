@@ -163,6 +163,9 @@ public class Comparison implements IComparison {
 					}
 				}
 			}
+			if (comparisonTarget2 instanceof GenericTime) {
+				val=((GenericTime)comparisonTarget2).time();
+			}
 			if (val == null) {
 				throw new IllegalStateException("Not implemented yet");
 			}

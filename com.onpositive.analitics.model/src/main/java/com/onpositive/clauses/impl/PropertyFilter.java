@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.ada.model.Context;
 import com.ada.model.IParsedEntity;
 import com.ada.model.conditions.IHasDomain;
 import com.onpositive.analitics.model.IClass;
@@ -22,6 +21,7 @@ import com.onpositive.clauses.ISelector;
 public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext {
 
 	protected final IProperty prop;
+	protected boolean inverse;
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -53,8 +53,16 @@ public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext 
 		return true;
 	}
 
-	protected final IComparison predicate;
+	protected IComparison predicate;
 	
+	public void setPredicate(IComparison predicate) {
+		this.predicate = predicate;
+	}
+
+	public IComparison getPredicate() {
+		return predicate;
+	}
+
 	private PropertyFilter(IProperty prop, IComparison predicate) {
 		super();
 		this.prop = prop;
@@ -67,11 +75,18 @@ public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext 
 	
 	@Override
 	public String toString() {
+		if (this.inverse) {
+			return "FILTER(!"+prop.toString()+","+predicate.toString()+")";
+			
+		}
 		return "FILTER("+prop.toString()+","+predicate.toString()+")";
 	}
 
 	@Clause("FILTER")
 	public static PropertyFilter propertyFilter(IProperty prop, IComparison predicate) {
+		if (prop instanceof PropertyFilter) {
+			return null;
+		}
 		if (predicate.domain().isSubtypeOf(prop.domain())){
 			prop=InverseProperty.createInverseProperty(prop);
 		}		
@@ -93,7 +108,9 @@ public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext 
 	}
 
 	public IHasDomain negate() {
-		return new PropertyFilter(this.prop, predicate.negate());
+		PropertyFilter propertyFilter = new PropertyFilter(prop, predicate);
+		propertyFilter.inverse=!this.inverse;
+		return propertyFilter;
 	}
 
 	@Override
@@ -108,7 +125,14 @@ public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext 
 
 	@Override
 	public Stream<Object> perform(Stream<Object> selector, IContext ct) {		
-		return selector.filter(x->predicate.match(prop.getValue(x),ct));
+		return selector.filter(x->isOk(ct, x));
+	}
+
+	private boolean isOk(IContext ct, Object x) {
+		if (this.inverse) {
+			return !predicate.match(prop.getValue(x),ct);
+		}
+		return predicate.match(prop.getValue(x),ct);
 	}
 
 	@Override
@@ -147,9 +171,7 @@ public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext 
 		return collect;
 	}
 
-	private Stream<Object> performFlt(Stream<Object> stream, IContext ct2) {
-		return stream.filter(x->this.predicate.match(x, ct));
-	}
+	
 
 	@Override
 	public void setContext(IContext ct) {

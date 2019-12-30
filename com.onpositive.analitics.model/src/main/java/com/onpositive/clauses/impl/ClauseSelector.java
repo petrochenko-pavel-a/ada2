@@ -13,6 +13,7 @@ import com.ada.model.TopValues;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
 import com.onpositive.clauses.IClause;
+import com.onpositive.clauses.IComparison;
 import com.onpositive.clauses.IContext;
 import com.onpositive.clauses.ISelector;
 import com.onpositive.clauses.Multiplicity;
@@ -30,6 +31,25 @@ public final class ClauseSelector implements ISelector {
 		this.type = type;
 		this.multiplicity = multiplicity;
 		this.clause = clause;
+	}
+	
+	@Override
+	public ISelector optimize() {
+		if (this.parent instanceof ClauseSelector) {
+			ClauseSelector sm=(ClauseSelector) this.parent;
+			if (this.clause instanceof PropertyFilter) {
+				if (sm.clause instanceof PropertyFilter) {
+					PropertyFilter p1=(PropertyFilter) this.clause;
+					PropertyFilter p0=(PropertyFilter)sm.clause;
+					if (p0.property().equals(p1.property())) {
+						IComparison c0=p0.predicate;
+						IComparison c1=p1.predicate;
+						System.out.println(c0);
+					}
+				}
+			}
+		}
+		return ISelector.super.optimize();
 	}
 	
 	public ClauseSelector cloneWithNewRoot(ISelector newRoot){
@@ -55,6 +75,8 @@ public final class ClauseSelector implements ISelector {
 			if (s1.clause instanceof TopValues) {
 				return null;
 			}
+			
+			//here we can optimize clause.
 		}
 		return new ClauseSelector(parent, type, m, c);
 	}

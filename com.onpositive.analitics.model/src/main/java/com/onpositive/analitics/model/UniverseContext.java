@@ -20,11 +20,11 @@ import com.onpositive.clauses.ITypedStore;
 import com.onpositive.clauses.impl.AllInstancesOf;
 import com.onpositive.clauses.impl.SingleSelector;
 import com.onpositive.clauses.impl.ThemInstances;
-import com.onpositive.nlp.lexer.DatePart;
 import com.onpositive.nlp.lexer.EntityRecognizer;
 import com.onpositive.nlp.lexer.Lexer;
 import com.onpositive.nlp.lexer.OrToken;
 import com.onpositive.nlp.parser.AllMatchParser;
+import com.onpositive.parsers.dates.IFreeFormDate;
 
 public class UniverseContext implements IContext, ITypedStore {
 
@@ -45,6 +45,7 @@ public class UniverseContext implements IContext, ITypedStore {
 		LinkedHashSet<List<Object>> results = new LinkedHashSet<>();
 		for (List<Object> seq : lex) {
 			Collection<List<Object>> parse = parser.parse(toSelectors(seq));
+			parse=optimize(parse);
 			results.addAll(simpleDisambiguator.disambiguate(parse));			
 		}
 		LinkedHashSet<List<Object>> gresults = new LinkedHashSet<>();
@@ -82,11 +83,27 @@ public class UniverseContext implements IContext, ITypedStore {
 		return new ParsedQuery(query,this,new ArrayList<>(simpleDisambiguator.finalDisambig(results)));
 	}
 
+	private Collection<List<Object>> optimize(Collection<List<Object>> parse) {
+		// TODO Auto-generated method stub
+		ArrayList<List<Object>>ne=new ArrayList<>();
+		for (List<Object>v:parse) {
+			if (v.size()==1) {
+				Object object = v.get(0);
+				if (object instanceof ISelector) {
+					ISelector sm=(ISelector) object;
+					ne.add(Collections.singletonList(sm.optimize()));
+				}
+			}
+			ne.add(v);
+		}
+		return ne;
+	}
+
 	private List<Object> toSelectors(List<Object> seq) {
 		ArrayList<Object> res = new ArrayList<>();
 		for (Object o : seq) {
-			if (o instanceof DatePart) {
-				res.add(new GenericTime((DatePart) o));
+			if (o instanceof IFreeFormDate) {
+				res.add(new GenericTime((IFreeFormDate) o));
 			} else if (o instanceof IClass) {
 				if (o == Builtins.ALLMATCH) {
 					ThemInstances ti = new ThemInstances();
@@ -198,6 +215,12 @@ public class UniverseContext implements IContext, ITypedStore {
 					if (annotation2 != null) {
 						for (String s : annotation2.value()) {
 							recognizer.addEntity(s, p);
+						}
+					}
+					ActionNames annotation3 = p.annotation(ActionNames.class);
+					if (annotation3 != null) {
+						for (String s : annotation3.value()) {
+							recognizer.addEntity(s, new ActionProperty(p,s));
 						}
 					}
 				});

@@ -2,8 +2,11 @@ package com.ada.logic;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import javax.swing.RowFilter.ComparisonType;
 
 import com.ada.model.AndComparison;
 import com.ada.model.Comparative;
@@ -19,10 +22,12 @@ import com.ada.model.PropertyValue;
 import com.ada.model.SimpleRelativeComparison;
 import com.ada.model.TopValues;
 import com.ada.model.conditions.IHasDomain;
+import com.onpositive.analitics.model.ActionProperty;
 import com.onpositive.analitics.model.Builtins;
 import com.onpositive.analitics.model.IClass;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
+import com.onpositive.analitics.model.java.TimeProp;
 import com.onpositive.clauses.IClause;
 import com.onpositive.clauses.IComparison;
 import com.onpositive.clauses.ISelector;
@@ -31,6 +36,7 @@ import com.onpositive.clauses.impl.Aggregators;
 import com.onpositive.clauses.impl.AllInstancesOf;
 import com.onpositive.clauses.impl.Clause;
 import com.onpositive.clauses.impl.ClauseSelector;
+import com.onpositive.clauses.impl.Clauses;
 import com.onpositive.clauses.impl.ContainmentClause;
 import com.onpositive.clauses.impl.InverseProperty;
 import com.onpositive.clauses.impl.MapByProperty;
@@ -39,26 +45,59 @@ import com.onpositive.clauses.impl.OrSelector;
 import com.onpositive.clauses.impl.PathProperty;
 import com.onpositive.clauses.impl.PropertyFilter;
 import com.onpositive.clauses.impl.SingleSelector;
+import com.onpositive.clauses.impl.SortByClause;
 
 public class BasicLogic {
 
-	@Clause("LAST_DATE")
-	public static IHasDomain lastDate(GenericTime t) {
-		return t.last();
-	}
-
-	@Clause("PREV_DATE")
-	public static IHasDomain prevDate(GenericTime t) {
-		return t.prev();
-	}
-
-	@Clause("NEXT_DATE")
-	public static IHasDomain nextDate(GenericTime t) {
-		return t.next();
-	}
 	
 	
+	@Clause("TAKE_FIRST")
+	public static ISelector takeFirst(ISelector s) {
+		Kind min = Comparative.Kind.MIN;
+		int limit=1;
+		return takeN(s, min, limit);
+	}
+	@Clause("TAKE_LAST")
+	public static ISelector takeLast(ISelector s) {
+		Kind min = Comparative.Kind.MAX;
+		int limit=1;
+		return takeN(s, min, limit);
+	}
+	@Clause("TAKE_FIRST_N")
+	public static ISelector takeFirstN(ISelector s,Number limit) {
+		Kind min = Comparative.Kind.MIN;
+		return takeN(s, min, limit.intValue());
+	}
+	@Clause("TAKE_LAST_N")
+	public static ISelector takeLastN(ISelector s,Number limit) {
+		Kind min = Comparative.Kind.MAX;
+		return takeN(s, min, limit.intValue());
+	}
 
+	private static ISelector takeN(ISelector s, Kind min, int limit) {
+		IClass cl=(IClass) s.domain();
+		TimeProp annotation = cl.annotation(TimeProp.class);
+		if (annotation!=null) {
+			String value = annotation.value();
+			IProperty ps=cl.property(value).get();
+			TopValues topValues = new TopValues(ps, min);
+			topValues.setLimit(limit);
+			ISelector produce = topValues.produce(s);
+			return produce;
+		}
+		return null;
+	}
+	
+	@Clause("COMP_S")
+	public static Object proc(ISelector s,IComparison ca) {
+		IType domain = ca.domain();
+		if (ca.domain().equals(s.domain())) {
+			return partOf(s, ca);
+		}
+		return null;
+		
+	}
+	
 	@Clause("COMPARISON_NUMB2")
 	public static IClause nextDate(Number n, IProperty p) {
 		if (p.range().equals(Builtins.INTEGER) || p.range().equals(Builtins.NUMBER)) {
@@ -122,7 +161,10 @@ public class BasicLogic {
 
 	@Clause("MEASURE")
 	public static Measure dim(Number n, ISelector sel) {
-		return new Measure(n, sel);
+		if (sel instanceof AllInstancesOf) {
+			return new Measure(n, sel);
+		}
+		return null;
 	}
 
 	// PROPERTY_COMPARATIVE
@@ -149,6 +191,9 @@ public class BasicLogic {
 
 	@Clause("TAKE_PROPERTY")
 	public static ISelector takeProperty(IProperty prop, ISelector s) {
+		if (prop instanceof ActionProperty) {
+			return null;
+		}
 		if (s.domain().isSubtypeOf(prop.domain())) {
 			return MapByProperty.map(prop).produce(s);
 		}
@@ -180,6 +225,7 @@ public class BasicLogic {
 
 	@Clause("HAVING")
 	public static ISelector partOf(ISelector base, IHasDomain parts) {
+		
 		if (base.clazz().isPresent() && parts.clazz().isPresent()) {
 			IProperty ps = PropertyAdapter.findContainmentPath(base.clazz().get(), parts.clazz().get());
 			if (ps != null) {
@@ -264,6 +310,193 @@ public class BasicLogic {
 		return null;
 	}
 
+	@Clause("LAST_RESORT")
+	public static IHasDomain lastResoirt(ISelector base,IComparison c) {
+		if (base instanceof ClauseSelector) {
+			ClauseSelector sm=(ClauseSelector) base;
+			IClause clause = sm.clause();
+			if (clause instanceof PropertyFilter) {
+				PropertyFilter p1=(PropertyFilter) clause;
+				IType range = p1.property().range();
+				if (range instanceof IClass) {
+					TimeProp annotation = ((IClass)range).annotation(TimeProp.class);
+					if (annotation!=null) {
+						IProperty prop = ((IClass)range).property(annotation.value()).get();
+						
+						IComparison predicate = p1.getPredicate();
+						ArrayList<IComparison> cm = new ArrayList<>();
+						cm.add(predicate);
+						cm.add(c);
+						AndComparison co=AndComparison.and(cm, predicate.domain());
+						p1.setPredicate(co);
+						return sm;
+					}
+				}
+			}
+			
+		}
+		return null;
+	}
+	
+	@Clause("DATE_S")
+	public static IHasDomain inTime(IHasDomain base,GenericTime time) {
+		IType domain = base.domain();
+		if (base instanceof IComparison) {
+			IComparison p1=(IComparison) base;
+			IType range = p1.domain();
+			if (range instanceof IClass) {
+				TimeProp annotation = ((IClass)range).annotation(TimeProp.class);
+				if (annotation!=null) {
+					IProperty prop = ((IClass)range).property(annotation.value()).get();
+					
+					ArrayList<IComparison> cm = new ArrayList<>();
+					cm.add(p1);
+					PropertyComparison m=new PropertyComparison(  new Comparison(time,new Comparative(Comparative.Kind.IN,"in")), prop);
+					cm.add(m);
+					AndComparison co=AndComparison.and(cm, p1.domain());
+					return co;
+				}
+			}
+		}
+		if (domain instanceof IClass&&base instanceof ISelector) {
+			ISelector s=(ISelector) base;
+			TimeProp annotation = domain.annotation(TimeProp.class);
+			if (annotation!=null) {
+				Optional<IProperty> property = ((IClass) domain).property(annotation.value());
+				return PropertyFilter.propertyFilter(property.get(), new Comparison(time, new Comparative(Comparative.Kind.IN,"in"))).produce((ISelector) base);
+			}
+		}
+		if (base instanceof ClauseSelector) {
+			ClauseSelector sm=(ClauseSelector) base;
+			IClause clause = sm.clause();
+			if (clause instanceof PropertyFilter) {
+				PropertyFilter p1=(PropertyFilter) clause;
+				IType range = p1.property().range();
+				if (range instanceof IClass) {
+					TimeProp annotation = ((IClass)range).annotation(TimeProp.class);
+					if (annotation!=null) {
+						IProperty prop = ((IClass)range).property(annotation.value()).get();
+						
+						IComparison predicate = p1.getPredicate();
+						ArrayList<IComparison> cm = new ArrayList<>();
+						cm.add(predicate);
+						PropertyComparison m=new PropertyComparison(  new Comparison(time,new Comparative(Comparative.Kind.IN,"in")), prop);
+						cm.add(m);
+						AndComparison co=AndComparison.and(cm, predicate.domain());
+						p1.setPredicate(co);
+						return sm;
+					}
+				}
+			}
+			
+		}
+		return null;
+	}
+	@Clause("INVERSE_COMPARISON")
+	public static IComparison INVERSE_COMPARISON(IComparison c) {
+		return c.negate();
+	}
+
+	@Clause("DATE_B")
+	public static ISelector beforeTime(ISelector base,GenericTime time) {
+		IType domain = base.domain();
+		if (domain instanceof IClass) {
+			TimeProp annotation = domain.annotation(TimeProp.class);
+			if (annotation!=null) {
+				Optional<IProperty> property = ((IClass) domain).property(annotation.value());
+				return PropertyFilter.propertyFilter(property.get(), new Comparison(time, new Comparative(Comparative.Kind.LESS,"before"))).produce(base);
+			}
+		}
+		if (base instanceof ClauseSelector) {
+			ClauseSelector sm=(ClauseSelector) base;
+			IClause clause = sm.clause();
+			if (clause instanceof PropertyFilter) {
+				PropertyFilter p1=(PropertyFilter) clause;
+				IType range = p1.property().range();
+				if (range instanceof IClass) {
+					TimeProp annotation = ((IClass)range).annotation(TimeProp.class);
+					if (annotation!=null) {
+						IProperty prop = ((IClass)range).property(annotation.value()).get();
+						
+						IComparison predicate = p1.getPredicate();
+						ArrayList<IComparison> cm = new ArrayList<>();
+						cm.add(predicate);
+						PropertyComparison m=new PropertyComparison(  new Comparison(time,new Comparative(Comparative.Kind.LESS,"before")), prop);
+						cm.add(m);
+						AndComparison co=AndComparison.and(cm, predicate.domain());
+						p1.setPredicate(co);
+						return sm;
+					}
+				}
+			}
+			
+		}
+		return null;
+	}
+	@Clause("DATE_P")
+	public static Object prop_and_date(IProperty p , GenericTime time) {
+		return dateOp(p, time,"in",Comparative.Kind.IN);
+	}
+	@Clause("DATE_PB")
+	public static Object prop_and_date1(IProperty p , GenericTime time) {
+		return dateOp(p, time,"before",Comparative.Kind.LESS);
+	}
+	@Clause("DATE_PA")
+	public static Object prop_and_date2(IProperty p , GenericTime time) {
+		return dateOp(p, time,"after",Comparative.Kind.MORE);
+	}
+
+	private static Object dateOp(IProperty p, GenericTime time,String nm,Comparative.Kind knd) {
+		IType range = p.range();
+		if (range instanceof IClass) {
+			TimeProp annotation = ((IClass)range).annotation(TimeProp.class);
+			if (annotation!=null) {
+				IProperty prop = ((IClass)range).property(annotation.value()).get();
+				
+				PropertyComparison m=new PropertyComparison(  new Comparison(time,new Comparative(knd,nm)), prop);
+				return PropertyFilter.propertyFilter(p, m);
+			}
+		}
+		return null;
+	}
+	
+	@Clause("DATE_F")
+	public static ISelector afrerTime(ISelector base,GenericTime time) {
+		IType domain = base.domain();
+		if (domain instanceof IClass) {
+			TimeProp annotation = domain.annotation(TimeProp.class);
+			if (annotation!=null) {
+				Optional<IProperty> property = ((IClass) domain).property(annotation.value());
+				return PropertyFilter.propertyFilter(property.get(), new Comparison(time, new Comparative(Comparative.Kind.MORE,"after"))).produce(base);
+			}
+		}
+		if (base instanceof ClauseSelector) {
+			ClauseSelector sm=(ClauseSelector) base;
+			IClause clause = sm.clause();
+			if (clause instanceof PropertyFilter) {
+				PropertyFilter p1=(PropertyFilter) clause;
+				IType range = p1.property().range();
+				if (range instanceof IClass) {
+					TimeProp annotation = ((IClass)range).annotation(TimeProp.class);
+					if (annotation!=null) {
+						IProperty prop = ((IClass)range).property(annotation.value()).get();
+						
+						IComparison predicate = p1.getPredicate();
+						ArrayList<IComparison> cm = new ArrayList<>();
+						cm.add(predicate);
+						PropertyComparison m=new PropertyComparison(  new Comparison(time,new Comparative(Comparative.Kind.MORE,"after")), prop);
+						cm.add(m);
+						AndComparison co=AndComparison.and(cm, predicate.domain());
+						p1.setPredicate(co);
+						return sm;
+					}
+				}
+			}
+			
+		}
+		return null;
+	}
+	
 	@Clause("CONTAINED")
 	public static ISelector contained(ISelector base, IHasDomain owner) {
 		if (base.clazz().isPresent() && owner.clazz().isPresent()) {
@@ -319,18 +552,18 @@ public class BasicLogic {
 	}
 
 	@Clause("COMBINE_COMPARISON")
-	public static IHasDomain combineAnd(List<Comparison> cls) {
+	public static IHasDomain combineAnd(List<IComparison> cls) {
 		if (cls.stream().filter(x -> x.isNotSolved()).findAny().isPresent()) {
 			return null;
 		}
 		if (cls.stream().map(x -> x.domain()).distinct().count() == 1) {
-			return new AndComparison(cls, cls.stream().map(x -> x.domain()).distinct().findFirst().get());
+			return AndComparison.and(cls, cls.stream().map(x -> x.domain()).distinct().findFirst().get());
 		}
 		return null;
 	}
 
 	@Clause("OR_COMPARISON")
-	public static IHasDomain combineOr(List<Comparison> cls) {
+	public static IHasDomain combineOr(List<IComparison> cls) {
 		if (cls.stream().filter(x -> x.isNotSolved()).findAny().isPresent()) {
 			return null;
 		}
@@ -411,6 +644,10 @@ public class BasicLogic {
 					if (!collect.isEmpty()&&collect.size()==1) {
 						IProperty ps=collect.iterator().next();
 						ArrayList<IProperty> path = new ArrayList<>();
+						if (prop instanceof ActionProperty) {
+							return PropertyFilter.propertyFilter(prop, new PropertyComparison(c,ps));
+							
+						}
 						path.add(prop);
 						path.add(PropertyFilter.propertyFilter(ps, c));
 						PathProperty pm=new PathProperty(path);

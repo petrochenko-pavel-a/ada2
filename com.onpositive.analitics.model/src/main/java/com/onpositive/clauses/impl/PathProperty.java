@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.onpositive.analitics.model.ActionProperty;
 import com.onpositive.analitics.model.IClass;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
@@ -18,7 +19,6 @@ public class PathProperty implements IProperty{
 	}
 
 	public PathProperty(List<IProperty> path) {
-		super();
 		this.path = path;
 	}
 

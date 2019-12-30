@@ -1,11 +1,12 @@
 package com.onpositive.slacklogs.model;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import com.onpositive.analitics.model.ActionNames;
 import com.onpositive.analitics.model.IEntity;
 import com.onpositive.analitics.model.KeyProperty;
 import com.onpositive.analitics.model.Labels;
@@ -14,7 +15,7 @@ import com.onpositive.analitics.model.java.InverseOf;
 import com.onpositive.analitics.model.java.Property;
 import com.onpositive.slacklogs.model.Message.Reaction;
 
-@Labels({"user","member"})
+@Labels({"user","member","член сообщества","пользователь","чувак","человек","люди","пацан","мужчина","женщина","кого","кто","те кто"})
 public class User implements Serializable,IEntity{
 
 	private String id;
@@ -75,8 +76,25 @@ public class User implements Serializable,IEntity{
 		return rs;		
 	}
 	
+	public LocalDateTime date() {
+		LocalDateTime ld=null;
+		for (Message m:this.messages()) {
+			LocalDateTime date = m.date();
+			if (ld==null) {
+				ld=date;
+			}
+			else {
+				if (date.isBefore(ld)) {
+					ld=date;
+				}
+			}
+		}
+		return ld;
+	}
+	
 	@Property
-	@Labels("messages")
+	@Labels({"messages","сообщений"})
+	@ActionNames({"write","create"})
 	@InverseOf("from")
 	@Lazy
 	public List<Message> messages() {

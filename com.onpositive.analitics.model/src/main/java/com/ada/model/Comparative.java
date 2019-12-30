@@ -1,12 +1,16 @@
 package com.ada.model;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
 
 import com.onpositive.nlp.lexer.EntityRecognizer;
+import com.onpositive.parsers.dates.IFreeFormDate;
 
 public final class Comparative {
 	
@@ -74,6 +78,23 @@ public final class Comparative {
 		}
 
 		public boolean op(Object property, Object comparisonTarget) {
+			if (property instanceof LocalDateTime) {
+				if (comparisonTarget instanceof IFreeFormDate) {
+					LocalDateTime t0=(LocalDateTime) property;
+					IFreeFormDate fd=(IFreeFormDate) comparisonTarget;
+					switch (this) {
+					case IN:
+						return t0.isAfter(LocalDateTime.of(fd.getStartDate(),LocalTime.of(0, 0)))&&t0.isBefore(LocalDateTime.of(fd.getEndDate(),LocalTime.of(23, 0)));
+					case LESS:
+						return t0.isBefore(LocalDateTime.of(fd.getStartDate(),LocalTime.of(0, 0)));
+					case MORE:
+						return t0.isAfter(LocalDateTime.of(fd.getEndDate(),LocalTime.of(23, 0)));
+								
+					default:
+						break;
+					}
+				}
+			}
 			Set<Object> set = toSet(comparisonTarget);
 			Number n=toNumber(property);
 			Number n2=toNumber(comparisonTarget);

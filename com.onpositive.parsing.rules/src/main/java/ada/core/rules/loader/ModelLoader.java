@@ -38,6 +38,7 @@ import com.ada.model.conditions.IHasDomain;
 import com.google.inject.Injector;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.clauses.IClause;
+import com.onpositive.clauses.IComparison;
 import com.onpositive.clauses.ISelector;
 import com.onpositive.clauses.impl.AllInstancesOf;
 import com.onpositive.clauses.impl.Clauses;
@@ -46,6 +47,7 @@ import com.onpositive.nlp.parser.AllMatchParser;
 import com.onpositive.nlp.parser.SyntacticMatch;
 import com.onpositive.nlp.parser.SyntacticPredicate;
 import com.onpositive.nlp.parser.TextMatch;
+import com.onpositive.parsers.dates.IFreeFormDate;
 
 public class ModelLoader {
 
@@ -64,7 +66,7 @@ public class ModelLoader {
 		tc.put("comparative", Comparative.class);
 		tc.put("measure", Measure.class);
 		tc.put("hasDomain", IHasDomain.class);
-		tc.put("comparison", Comparison.class);
+		tc.put("comparison", IComparison.class);
 		tc.put("named_date", GenericTime.class);
 		tc.put("dim_scalar", IScalarWithDimension.class);
 		tc.put("property_value", PropertyValue.class);

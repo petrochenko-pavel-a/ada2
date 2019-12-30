@@ -76,7 +76,9 @@ public class SimpleDisambiguator {
 				collect.sort(countEstimator);
 				
 			}
-			return Collections.singletonList(Collections.singletonList(collect.get(0)));
+			List singletonList = Collections.singletonList(collect.get(0));
+			
+			return Collections.singletonList(singletonList);
 		}
 		return ms;		
 	}

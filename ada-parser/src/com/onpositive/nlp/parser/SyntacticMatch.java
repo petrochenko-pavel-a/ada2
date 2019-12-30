@@ -21,7 +21,6 @@ public class SyntacticMatch<T> implements IRule<T> {
 		return layer;
 	}
 	
-	
 	public SyntacticMatch(SyntacticPredicate pred, Function<Map<String, Object>, T> consumer) {
 		super();
 		this.pred = pred;
@@ -30,6 +29,7 @@ public class SyntacticMatch<T> implements IRule<T> {
 
 	@Override
 	public RuleResult<T> consume(List<T> elements, int position) {
+		
 		LinkedHashMap<String, Object> vars = new LinkedHashMap<>();
 		int re = pred.tryParse(elements, position, vars);
 		

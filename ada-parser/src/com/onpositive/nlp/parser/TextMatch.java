@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
 
+import com.onpositive.nlp.lexer.SynonimForms;
+
 public class TextMatch implements SyntacticPredicate{
 
 	protected HashSet<String>matches=new HashSet<>();
@@ -20,7 +22,15 @@ public class TextMatch implements SyntacticPredicate{
 		if (pos>=v.size()){
 			return -1;
 		}
-		if (matches.contains(v.get(pos))) return 1;
+		Object ma = v.get(pos);
+		if (matches.contains(ma)) return 1;
+		if (ma instanceof String) {
+			for (String s:matches) {
+				if (SynonimForms.isPossibleReplacement((String) ma, s)) {
+					return 1;
+				}
+			}
+		}
 		return -1;
 	}
 

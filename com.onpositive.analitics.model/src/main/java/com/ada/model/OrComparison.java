@@ -11,7 +11,7 @@ import com.onpositive.clauses.IContext;
 
 public class OrComparison implements IComparison{
 
-	protected List<Comparison>cm;
+	protected List<IComparison>cm;
 	protected IType domain;
 	
 	@Override
@@ -45,7 +45,7 @@ public class OrComparison implements IComparison{
 		return true;
 	}
 
-	public OrComparison(List<Comparison> cm, IType domain) {
+	public OrComparison(List<IComparison> cm, IType domain) {
 		super();
 		this.cm = cm;
 		this.domain = domain;
@@ -63,7 +63,7 @@ public class OrComparison implements IComparison{
 
 	@Override
 	public IComparison negate() {
-		return new AndComparison(cm.stream().map(x->x.negate()).collect(Collectors.toList()), domain);
+		return AndComparison.and(cm.stream().map(x->x.negate()).collect(Collectors.toList()), domain);
 	}
 
 	@Override
@@ -88,7 +88,7 @@ public class OrComparison implements IComparison{
 
 	@Override
 	public boolean match(Object property, IContext ct) {
-		for (Comparison c:cm){
+		for (IComparison c:cm){
 			if (c.match(property, ct)){
 				return true;
 			}

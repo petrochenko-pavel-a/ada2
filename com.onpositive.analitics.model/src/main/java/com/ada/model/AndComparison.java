@@ -1,6 +1,8 @@
 package com.ada.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,7 +13,7 @@ import com.onpositive.clauses.IContext;
 
 public class AndComparison implements IComparison {
 
-	protected List<Comparison> cm;
+	protected List<IComparison> cm;
 	protected IType domain;
 
 	@Override
@@ -45,10 +47,23 @@ public class AndComparison implements IComparison {
 		return true;
 	}
 
-	public AndComparison(List<Comparison> cm, IType domain) {
+	private AndComparison(List<IComparison> cm, IType domain) {
 		super();
 		this.cm = cm;
 		this.domain = domain;
+	}
+	
+	public static AndComparison and(List<IComparison>cm,IType domain) {
+		LinkedHashSet<IComparison>q=new LinkedHashSet<>();
+		for (IComparison m:cm) {
+			if (m instanceof AndComparison) {
+				q.addAll(((AndComparison) m).cm);
+			}
+			else {
+				q.add(m);
+			}
+		}
+		return new AndComparison(new ArrayList<IComparison>(q), domain);
 	}
 
 	@Override
@@ -88,7 +103,7 @@ public class AndComparison implements IComparison {
 
 	@Override
 	public boolean match(Object property, IContext ct) {
-		for (Comparison c : cm) {
+		for (IComparison c : cm) {
 			if (!c.match(property, ct)) {
 				return false;
 			}

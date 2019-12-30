@@ -1,9 +1,8 @@
 package com.ada.model;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import javax.swing.RowFilter.ComparisonType;
 
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
@@ -13,6 +12,10 @@ import com.onpositive.clauses.IContext;
 public class PropertyComparison implements IComparison{
 
 	protected final Comparative cmp;
+	
+	protected final IComparison comparison;
+	
+	protected boolean negated;
 
 	public Comparative getCmp() {
 		return cmp;
@@ -26,8 +29,14 @@ public class PropertyComparison implements IComparison{
 
 	public PropertyComparison(Comparative cmp, IProperty prop) {
 		super();
-		
+		this.comparison=null;
 		this.cmp = cmp;
+		this.prop = prop;
+	}
+	public PropertyComparison(IComparison cmp, IProperty prop) {
+		super();
+		this.comparison=cmp;
+		this.cmp = null;
 		this.prop = prop;
 	}
 
@@ -38,6 +47,13 @@ public class PropertyComparison implements IComparison{
 
 	@Override
 	public IComparison negate() {
+		if (this.cmp==null) {
+			
+			PropertyComparison propertyComparison = new PropertyComparison(this.comparison,prop);
+			propertyComparison.negated=!negated;
+			return propertyComparison;
+			
+		}
 		return new PropertyComparison(new Comparative(cmp.getOperation().negate(), "not "+cmp.text),prop);
 	}
 
@@ -85,6 +101,14 @@ public class PropertyComparison implements IComparison{
 	
 	@Override
 	public String toString() {
+		if (cmp==null) {
+			if (negated) {
+				return "PC( not "+comparison.toString()+","+prop.toString()+")";
+					
+			}
+			return "PC("+comparison.toString()+","+prop.toString()+")";
+			
+		}
 		return "PC("+cmp.toString()+","+prop.toString()+")";
 	}
 
@@ -101,8 +125,31 @@ public class PropertyComparison implements IComparison{
 	@Override
 	public boolean match(Object property, IContext ct) {
 		Object value = this.prop.getValue(property);
-		
+		if (this.cmp==null) {
+			boolean innerM = innerM(ct, value);
+			if (negated) {
+				return !innerM;
+			}
+			return innerM;
+		}
 		return this.cmp.operation.op(value, cmp.text);
+	}
+
+	protected boolean innerM(IContext ct, Object value) {
+		if (value instanceof Collection) {
+			Collection mm=(Collection) value;
+			for (Object z:mm) {
+				if( this.comparison.match(z, ct)) {
+					return true;
+				}
+							
+			}
+			return false;
+		}
+		if (value!=null) {
+			return this.comparison.match(value, ct);
+		}
+		return false;
 	}
 
 	@Override
