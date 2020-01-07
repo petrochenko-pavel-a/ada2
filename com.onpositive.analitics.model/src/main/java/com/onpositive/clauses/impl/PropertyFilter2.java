@@ -18,7 +18,7 @@ import com.onpositive.clauses.IContext;
 import com.onpositive.clauses.IHasContext;
 import com.onpositive.clauses.ISelector;
 
-public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext {
+public class PropertyFilter2 implements IClause,IHasDomain,IProperty,IHasContext {
 
 	protected final IProperty prop;
 	protected boolean inverse;
@@ -40,7 +40,7 @@ public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext 
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		PropertyFilter other = (PropertyFilter) obj;
+		PropertyFilter2 other = (PropertyFilter2) obj;
 		if (predicate == null) {
 			if (other.predicate != null)
 				return false;
@@ -64,7 +64,7 @@ public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext 
 		return predicate;
 	}
 
-	private PropertyFilter(IProperty prop, IComparison predicate) {
+	private PropertyFilter2(IProperty prop, IComparison predicate) {
 		super();
 		this.prop = prop;
 		this.predicate = predicate;
@@ -84,14 +84,14 @@ public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext 
 	}
 
 	@Clause("FILTER")
-	public static PropertyFilter propertyFilter(IProperty prop, IComparison predicate) {
-		if (prop instanceof PropertyFilter) {
+	public static PropertyFilter2 propertyFilter(IProperty prop, IComparison predicate) {
+		if (prop instanceof PropertyFilter2) {
 			return null;
 		}
 		if (predicate.domain().isSubtypeOf(prop.domain())){
 			prop=InverseProperty.createInverseProperty(prop);
 		}		
-		return new PropertyFilter(prop, predicate);
+		return new PropertyFilter2(prop, predicate);
 	}
 	
 
@@ -109,7 +109,7 @@ public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext 
 	}
 
 	public IHasDomain negate() {
-		PropertyFilter propertyFilter = new PropertyFilter(prop, predicate);
+		PropertyFilter2 propertyFilter = new PropertyFilter2(prop, predicate);
 		propertyFilter.inverse=!this.inverse;
 		return propertyFilter;
 	}
@@ -131,9 +131,9 @@ public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext 
 
 	private boolean isOk(IContext ct, Object x) {
 		if (this.inverse) {
-			return !predicate.match(prop.getValue(x),ct);
+			return !predicate.match(x,ct);
 		}
-		return predicate.match(prop.getValue(x),ct);
+		return predicate.match(x,ct);
 	}
 
 	@Override
@@ -165,6 +165,7 @@ public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext 
 	
 	@Override
 	public Object getValue(Object obj) {
+		obj=prop.getValue(obj);
 		if (obj instanceof Collection) {
 			 return perform(((Collection)obj).stream(),ct).collect(Collectors.toSet());
 		}

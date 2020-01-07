@@ -13,10 +13,11 @@ import com.onpositive.analitics.model.Labels;
 import com.onpositive.analitics.model.Lazy;
 import com.onpositive.analitics.model.java.InverseOf;
 import com.onpositive.analitics.model.java.Property;
+import com.onpositive.nlp.lexer.IUncountable;
 import com.onpositive.slacklogs.model.Message.Reaction;
 
 @Labels({"user","member","член сообщества","пользователь","чувак","человек","люди","пацан","мужчина","женщина","кого","кто","те кто"})
-public class User implements Serializable,IEntity{
+public class User implements Serializable,IEntity,IUncountable{
 
 	private String id;
 
@@ -93,7 +94,7 @@ public class User implements Serializable,IEntity{
 	}
 	
 	@Property
-	@Labels({"messages","сообщений"})
+	@Labels({"messages","сообщений","сообщения"})
 	@ActionNames({"write","create"})
 	@InverseOf("from")
 	@Lazy

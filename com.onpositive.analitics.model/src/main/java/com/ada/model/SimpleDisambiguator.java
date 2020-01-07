@@ -3,12 +3,14 @@ package com.ada.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.ocpsoft.prettytime.shade.edu.emory.mathcs.backport.java.util.Collections;
 
 import com.onpositive.analitics.model.IProperty;
+import com.onpositive.clauses.ISelector;
 
 public class SimpleDisambiguator {
 
@@ -16,7 +18,16 @@ public class SimpleDisambiguator {
 
 		@Override
 		public int compare(IParsedEntity o1, IParsedEntity o2) {
-			
+			if (o1 instanceof ISelector) {
+				if (!(o2 instanceof ISelector)) {
+					return -1;
+				}	
+			}
+			if (o2 instanceof ISelector) {
+				if (!(o1 instanceof ISelector)) {
+					return 1;
+				}	
+			}
 			
 			List<? extends IParsedEntity> children = o1.children();
 			int size = children.size();
@@ -70,6 +81,7 @@ public class SimpleDisambiguator {
 	
 	@SuppressWarnings("unchecked")
 	public Collection<List<Object>> disambiguate(Collection<List<Object>>ms){
+		ms=new LinkedHashSet<>(ms);
 		List<IParsedEntity> collect = ms.stream().filter(x->x.size()==1&&(x.get(0) instanceof IParsedEntity)).map(x->(IParsedEntity)x.get(0)).collect(Collectors.toList());
 		if (collect.size()>0){
 			if (collect.size()>1){

@@ -9,6 +9,7 @@ import java.util.List;
 import org.atteo.evo.inflector.English;
 
 import com.onpositive.semantic.wordnet.GrammarRelation;
+import com.onpositive.semantic.wordnet.TextElement;
 import com.onpositive.semantic.wordnet.WordNetProvider;
 import com.swabunga.spell.engine.SpellDictionaryHashMap;
 
@@ -54,11 +55,14 @@ public class EntityRecognizer implements IEntityRecognizer {
 		entityName = entityName.replace("_", "");
 		entityName = entityName.replace("-", "");
 		innerEnd(entityName, value);
+		if (!(value instanceof IUncountable)) {
 		innerEnd(English.plural(entityName), value);
+		}
 
 	}
 
 	public void innerEnd(String entityName, Object value) {
+
 		innerInnerEnd(entityName, value);
 	}
 
@@ -104,37 +108,44 @@ public class EntityRecognizer implements IEntityRecognizer {
 			return null;
 		}
 		String lowerCase = bld.toString().toLowerCase();
-		
+
 		ArrayList<Object> arrayList = entities.get(lowerCase);
 		if (arrayList == null) {
-			GrammarRelation[] possibleGrammarForms = WordNetProvider.getInstance().getPossibleGrammarForms(lowerCase);
-			if (possibleGrammarForms != null) {
-				for (GrammarRelation c : possibleGrammarForms) {
-					if (entities.containsKey(c.getWord().getBasicForm())) {
-						return entities.get(c.getWord().getBasicForm());
-					}
-					if (SynonimForms.synonims.containsKey(c.getWord().getBasicForm())) {
-						String string = SynonimForms.synonims.get(c.getWord().getBasicForm());
-						arrayList = entities.get(string);
-						return arrayList;
+			arrayList = new ArrayList<>();
+		}
+		GrammarRelation[] possibleGrammarForms = WordNetProvider.getInstance().getPossibleGrammarForms(lowerCase);
+		if (possibleGrammarForms != null) {
+			for (GrammarRelation c : possibleGrammarForms) {
+				if (entities.containsKey(c.getWord().getBasicForm())) {
+					ArrayList<Object> arrayList2 = entities.get(c.getWord().getBasicForm());
+					arrayList.addAll(arrayList2);
+				}
+				if (SynonimForms.synonims.containsKey(c.getWord().getBasicForm())) {
+					String string = SynonimForms.synonims.get(c.getWord().getBasicForm());
+					ArrayList<Object> arrayList2 = entities.get(string);
+					arrayList.addAll(arrayList2);
+				}
+			}
+		}
+		if (arrayList.isEmpty()) {
+			if (SynonimForms.synonims.containsKey(lowerCase)) {
+				String string = SynonimForms.synonims.get(lowerCase);
+				arrayList = entities.get(string);
+				if (string == null) {
+					possibleGrammarForms = WordNetProvider.getInstance().getPossibleGrammarForms(string);
+					if (possibleGrammarForms != null) {
+						for (GrammarRelation c : possibleGrammarForms) {
+							if (entities.containsKey(c.getWord().getBasicForm())) {
+								ArrayList<Object> arrayList2 = entities.get(c.getWord().getBasicForm());
+								arrayList.addAll(arrayList2);
+							}
+						}
 					}
 				}
 			}
 		}
-		if (SynonimForms.synonims.containsKey(lowerCase)) {
-			String string = SynonimForms.synonims.get(lowerCase);
-			arrayList = entities.get(string);
-			if (string==null) {
-				GrammarRelation[] possibleGrammarForms = WordNetProvider.getInstance().getPossibleGrammarForms(string);
-				if (possibleGrammarForms != null) {
-					for (GrammarRelation c : possibleGrammarForms) {
-						if (entities.containsKey(c.getWord().getBasicForm())) {
-							return entities.get(c.getWord().getBasicForm());
-						}
-					}
-				}	
-			}
-			return arrayList;
+		if (arrayList.isEmpty()) {
+			return null;
 		}
 		// if (!startsWithNumb&&arrayList == null && ((lowerCase.length() >
 		// 3&&tokens.size()==1)||(lowerCase.length() > 6&&tokens.size()>1))&&

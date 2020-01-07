@@ -138,7 +138,12 @@ rules:
  propertyMap2:
   when: s=selector p=property
   then: TAKE_PROPERTY(p,s)
-  example: "Denis created" 
+  example: "Denis created"
+ propertyMap3:
+  when: p=property s=selector 
+  then: TAKE_PROPERTY(p,s)
+  example: "Denis created"   
+  layer: normal
  combine:
   when:  s=selector ("and" | "that_were" | "that_was" | "who"  | "which" | "that" | "where" | "with"|"who_have"|",")? ("have"|"has"|"are") ? c=clause
   then: COMBINE(s,c)

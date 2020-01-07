@@ -23,4 +23,14 @@ public interface IProperty extends INamed{
 	}
 
 	default boolean isLazy() { return false;}
+	
+	default boolean eq(IProperty z) {
+		if (this.equals(z)) {
+			return true;
+		}
+		if (z.equals(this)) {
+			return true;
+		}
+		return false;
+	}
 }

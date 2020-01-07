@@ -25,8 +25,14 @@ public class ActionProperty implements IProperty{
 			return true;
 		if (obj == null)
 			return false;
+		if (obj instanceof IProperty) {
+			if (obj.equals(parent)) {
+				return true;
+			}
+		}
 		if (getClass() != obj.getClass())
 			return false;
+		
 		ActionProperty other = (ActionProperty) obj;
 		if (parent == null) {
 			if (other.parent != null)
@@ -80,4 +86,6 @@ public class ActionProperty implements IProperty{
 	public String toString() {
 		return "PA:"+text;
 	}
+	
+	
 }

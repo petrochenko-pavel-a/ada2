@@ -4,10 +4,11 @@ import java.util.Collection;
 
 import com.onpositive.analitics.model.Builtins;
 import com.onpositive.analitics.model.IClass;
+import com.onpositive.analitics.model.ICompoundProperty;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
 
-public class NumberProperty implements IProperty{
+public class NumberProperty implements IProperty,ICompoundProperty{
 
 	public final IProperty ps;
 	
@@ -62,5 +63,10 @@ public class NumberProperty implements IProperty{
 			return 0;
 		}
 		return 1;
+	}
+
+	@Override
+	public IProperty original() {
+		return ps;
 	}
 }

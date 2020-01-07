@@ -133,18 +133,57 @@ public class BasicTest extends TestCase {
 		Collection<Object> execute = context.execute("сообщения от Alex Natekin").execute().results();	
 		assertTrue(execute.size()==294);
 		execute = context.execute("каналы с сообщениями от Alex Natekin").execute().results();	
-		//assertTrue(execute.size()==1);
-
+				
+		assertTrue(execute.size()==2);		
 		execute = context.execute("каналы в которых есть сообщения Alex Natekin").execute().results();	
 		assertTrue(execute.size()==2);
-		execute = context.execute("каналы с сообщениями Alex Natekin").execute().results();	
-		assertTrue(execute.size()==2);
+		Collection<Object> execute2 = context.execute("сообщения Alex Natekin").execute().results();	
+		assertTrue(execute2.size()==294);
+		execute2 = context.execute("сообщения написанные Alex Natekin").execute().results();	
+		assertTrue(execute2.size()==294);
+		execute2 = context.execute("сообщения написанные Alex Natekin в self driving").execute().results();	
+		assertTrue(execute2.size()==1);
+		execute2 = context.execute("сообщения Alex Natekin за 2019 год").execute().results();	
+		assertTrue(execute2.size()==4);
+	}
+	public void test9() {
+		Collection<Object> execute = context.execute("сколько сообщений в self driving").execute().results();	
+		assertTrue(execute.iterator().next().toString().equals("2487.0"));
+		execute = context.execute("число сообщений в self driving").execute().results();	
+		assertTrue(execute.iterator().next().toString().equals("2487.0"));
+		execute = context.execute("сколько сообщений написал Natekin").execute().results();	
+		assertTrue(execute.iterator().next().toString().equals("294.0"));
+	}
+	public void test10() {
+		Collection<Object> execute = context.execute("кто написал больше всего сообщений").execute().results();	
+		assertTrue(execute.iterator().next().toString().equals("Roman Degtiarev"));
+		execute = context.execute("пользователь с наибольшим количеством сообщений").execute().results();	
+		assertTrue(execute.iterator().next().toString().equals("Roman Degtiarev"));
+		execute = context.execute("пользователь с наибольшим количеством сообщений в  2014-2019 годах").execute().results();	
+		assertTrue(execute.iterator().next().toString().equals("Roman Degtiarev"));
+		execute = context.execute("пользователь с наибольшим количеством сообщений в  2014-2019 годах в канале self driving").execute().results();
+		assertTrue(execute.iterator().next().toString().equals("Vladimir Iglovikov"));		
 	}
 	
-//	public void test1() {
-//		Collection<Object> execute = context.execute("users with more then 100 messages").execute().results();
-//		assertEquals(execute.size(), 20);
-//	}
+	public void test11() {
+		Collection<Object> execute = context.execute("кто написал больше всего сообщений").execute().results();	
+		assertTrue(execute.iterator().next().toString().equals("Roman Degtiarev"));
+		execute = context.execute("пользователь с наибольшим количеством сообщений").execute().results();	
+		assertTrue(execute.iterator().next().toString().equals("Roman Degtiarev"));
+		execute = context.execute("пользователь с наибольшим количеством сообщений в  2014-2019 годах").execute().results();	
+		assertTrue(execute.iterator().next().toString().equals("Roman Degtiarev"));
+		execute = context.execute("пользователь с наибольшим количеством сообщений в  2014-2019 годах в канале self driving").execute().results();
+		assertTrue(execute.iterator().next().toString().equals("Vladimir Iglovikov"));		
+	}	
+	
+	public void test13() {
+		Collection<Object> execute = context.execute("сообщения с reactions").execute().results();
+		assertEquals(execute.size(), 2680);
+		execute = context.execute("сообщения без reaction").execute().results();
+		assertEquals(execute.size(), 10289);
+		execute = context.execute("сообщения c наибольшим количеством reactions").execute().results();
+		assertEquals(execute.size(), 10289);
+	}
 //	
 //	public void test2() {
 //		Collection<Object> execute = context.execute("users with highest number of messages").execute().results();

@@ -36,7 +36,7 @@ public class Workspace implements Serializable {
 		}
 		try {
 			BufferedInputStream bufferedInputStream = new BufferedInputStream(
-					new FileInputStream("/Users/kor/git/ada2/com.onpositive.slacklogs.model/store-d.dat"));
+					new FileInputStream("C:\\Users\\Павел\\git\\ada2\\com.onpositive.slacklogs.model\\store-d.dat"));
 			ObjectInputStream objectInputStream = new ObjectInputStream(bufferedInputStream);
 			try {
 				readObject = (Workspace) objectInputStream.readObject();

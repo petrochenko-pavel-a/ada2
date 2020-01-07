@@ -34,6 +34,7 @@ public class Message implements Serializable,IEntity{
 		String name;
 		
 		User[] users;
+		
 		int count;
 	}
 	
@@ -51,6 +52,9 @@ public class Message implements Serializable,IEntity{
 	@Property
 	@InverseOf("messages")
 	protected Channel channel;
+	
+	@Property()
+	@Labels("reactions")
 	protected Reaction[] reactions;
 
 	protected String ts;

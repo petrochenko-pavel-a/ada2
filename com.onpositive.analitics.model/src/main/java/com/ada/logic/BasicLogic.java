@@ -25,6 +25,7 @@ import com.ada.model.conditions.IHasDomain;
 import com.onpositive.analitics.model.ActionProperty;
 import com.onpositive.analitics.model.Builtins;
 import com.onpositive.analitics.model.IClass;
+import com.onpositive.analitics.model.ICompoundProperty;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
 import com.onpositive.analitics.model.java.TimeProp;
@@ -44,6 +45,7 @@ import com.onpositive.clauses.impl.NumberProperty;
 import com.onpositive.clauses.impl.OrSelector;
 import com.onpositive.clauses.impl.PathProperty;
 import com.onpositive.clauses.impl.PropertyFilter;
+import com.onpositive.clauses.impl.PropertyFilter2;
 import com.onpositive.clauses.impl.SingleSelector;
 import com.onpositive.clauses.impl.SortByClause;
 
@@ -194,6 +196,18 @@ public class BasicLogic {
 		if (prop instanceof ActionProperty) {
 			return null;
 		}
+		if (prop instanceof PropertyFilter) {
+			return null;
+		}
+		if (s instanceof ClauseSelector) {
+			ClauseSelector sm=(ClauseSelector) s;
+			if (sm.clause() instanceof MapByProperty) {
+				MapByProperty mp=(MapByProperty) sm.clause();
+				if (mp.property().equals(prop)) {
+					return null;
+				}
+			}
+		}
 		if (s.domain().isSubtypeOf(prop.domain())) {
 			return MapByProperty.map(prop).produce(s);
 		}
@@ -214,6 +228,27 @@ public class BasicLogic {
 	public static IProperty numberOf(IProperty prop) {
 		if (prop.range().equals(Builtins.INTEGER)) {
 			return prop;
+		}
+		if (prop instanceof PropertyFilter) {
+			PropertyFilter m=(PropertyFilter) prop;
+		
+			PropertyFilter2 flt2=PropertyFilter2.propertyFilter(m.property(), m.getPredicate());
+			return new NumberProperty(flt2);
+		}
+		if (prop instanceof PathProperty) {
+			PathProperty pa=(PathProperty) prop;
+			if (pa.getPath().get(0) instanceof PropertyFilter) {
+				PropertyFilter m=(PropertyFilter) pa.getPath().get(0);
+				
+				PropertyFilter2 flt2=PropertyFilter2.propertyFilter(m.property(), m.getPredicate());
+				ArrayList<IProperty> path = new ArrayList<>();
+				path.add(flt2);
+				path.addAll(pa.getPath().subList(1, pa.getPath().size()));
+				PathProperty pm=new PathProperty(path);
+				return new NumberProperty(pm);
+			}
+			
+			
 		}
 		return new NumberProperty(prop);
 	}
@@ -616,6 +651,17 @@ public class BasicLogic {
 				
 			}
 			c = (IComparison) predicate;
+		}
+		if (predicate instanceof PropertyComparison) {
+			PropertyComparison m=(PropertyComparison) predicate;
+			IProperty prop2 = m.getProp();
+			if (prop2 instanceof ICompoundProperty) {
+				IProperty original = ((ICompoundProperty) prop2).original();
+				if (original.eq(prop)) {
+					return predicate;
+				}
+			}
+			System.out.println(prop2);
 		}
 
 		if (c == null) {
