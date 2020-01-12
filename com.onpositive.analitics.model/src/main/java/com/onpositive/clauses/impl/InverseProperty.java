@@ -1,5 +1,7 @@
 package com.onpositive.clauses.impl;
 
+import java.util.Optional;
+
 import com.onpositive.analitics.model.IClass;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
@@ -8,6 +10,12 @@ import com.onpositive.analitics.model.java.InverseOf;
 public class InverseProperty implements IProperty{
 
 	public static IProperty createInverseProperty(IProperty original) {
+		if (original instanceof NumberProperty) {
+			return null;
+		}
+		if (original==null) {
+			return null;
+		}
 		if (original instanceof InverseProperty){
 			InverseProperty p=(InverseProperty) original;
 			return p.original;
@@ -15,7 +23,10 @@ public class InverseProperty implements IProperty{
 		InverseOf annotation = original.annotation(InverseOf.class);
 		if (annotation!=null) {
 			IClass tp=(IClass) original.range();
-			return tp.property(annotation.value()).get();
+			Optional<IProperty> property = tp.property(annotation.value());
+			if (property.isPresent()) {
+				return property.get();
+			}
 		}
 		return new InverseProperty(original);
 	}

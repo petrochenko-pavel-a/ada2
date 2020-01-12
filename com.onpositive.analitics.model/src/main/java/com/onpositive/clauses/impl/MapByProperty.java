@@ -18,6 +18,11 @@ import com.onpositive.clauses.Multiplicity;
 public class MapByProperty implements IClause,IHasDomain{
 
 	private IProperty property;
+	boolean mappable=true;
+	
+	public void freezeMap() {
+		this.mappable=false;
+	}
 	
 	@Override
 	public int hashCode() {
@@ -111,6 +116,10 @@ public class MapByProperty implements IClause,IHasDomain{
 			}
 		});
 		return rs.stream();
+	}
+
+	public boolean mappable() {
+		return mappable;
 	}
 
 	

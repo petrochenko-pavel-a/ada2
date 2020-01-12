@@ -5,15 +5,20 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.onpositive.analitics.model.IEntity;
 import com.onpositive.analitics.model.Labels;
+import com.onpositive.analitics.model.NoTransitivePath;
+import com.onpositive.analitics.model.java.Counter;
 import com.onpositive.analitics.model.java.InverseOf;
 import com.onpositive.analitics.model.java.Property;
 import com.onpositive.analitics.model.java.TimeProp;
+import com.onpositive.slacklogs.model.Workspace.MetaReaction;
 
 @Labels({"message","сообщение","пост","писулька"})
 @TimeProp("date")
@@ -25,6 +30,7 @@ public class Message implements Serializable,IEntity{
 	}
 	
 	@Labels("reaction")
+	@Counter(ReactionCounter.class)
 	public static class Reaction implements Serializable,IEntity{
 		/**
 		 * 
@@ -46,6 +52,7 @@ public class Message implements Serializable,IEntity{
 	@Property()
 	@Labels({"from","by"})
 	@InverseOf("messages")
+	@NoTransitivePath
 	protected User from;
 	protected String text;
 	
@@ -53,8 +60,6 @@ public class Message implements Serializable,IEntity{
 	@InverseOf("messages")
 	protected Channel channel;
 	
-	@Property()
-	@Labels("reactions")
 	protected Reaction[] reactions;
 
 	protected String ts;
@@ -70,11 +75,35 @@ public class Message implements Serializable,IEntity{
 	}
 	
 	@Property
+	@Labels("reactions")
 	public List<Reaction>reactions(){
 		if (reactions==null) {
 			return Collections.emptyList();
 		}
 		return Arrays.asList(reactions);
+	}
+	
+	@Property
+	public Collection<MetaReaction>reactionsMeta(){
+		if (reactions==null) {
+			return Collections.emptyList();
+		}
+		LinkedHashSet<MetaReaction>ms=new LinkedHashSet<>();
+		for (Reaction z:reactions) {
+			ms.add(new MetaReaction(z.name));
+		}
+		return ms;
+	}
+	
+	public boolean has(MetaReaction mr) {
+		if (this.reactions!=null) {
+			for (Reaction m:reactions) {
+				if (m.name.equals(mr.name)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	@Property

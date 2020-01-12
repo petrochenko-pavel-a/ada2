@@ -179,4 +179,8 @@ public class PropertyFilter2 implements IClause,IHasDomain,IProperty,IHasContext
 	public void setContext(IContext ct) {
 		this.ct=ct;
 	}	
+	@Override
+	public boolean canMap() {
+		return this.prop.canMap();
+	}
 }

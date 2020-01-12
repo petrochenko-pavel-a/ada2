@@ -5,9 +5,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 
+import com.onpositive.analitics.model.Containment;
 import com.onpositive.analitics.model.IClass;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
+import com.onpositive.analitics.model.NoTransitivePath;
 import com.onpositive.clauses.impl.ContainingProperty;
 import com.onpositive.clauses.impl.InverseProperty;
 import com.onpositive.clauses.impl.JoinProperty;
@@ -115,6 +117,9 @@ public class PropertyAdapter {
 		if (props.isEmpty()) {
 			c0.allProperties().forEach(v -> {
 				IType range = v.range();
+				if (v.annotation(NoTransitivePath.class)!=null) {
+					return;
+				}
 				if (range instanceof IClass) {
 					IClass m = (IClass) range;
 					IProperty findPath = findPath(m, c1, level + 1, visited);
@@ -129,6 +134,11 @@ public class PropertyAdapter {
 		if (!props.isEmpty()) {
 			if (props.size() == 1) {
 				return props.get(0);
+			}
+			for (IProperty p:props) {
+				if (p.annotation(Containment.class)!=null) {
+					return p;
+				}
 			}
 			return new JoinProperty(new ArrayList<>(new LinkedHashSet<>(props)));
 		}
@@ -162,6 +172,16 @@ public class PropertyAdapter {
 				return new PathProperty(ps);
 			}
 		}
+//		for (IProperty q:base.properties()) {
+//			if (q.range().equals(parts)) {
+//				return q;
+//			}
+//		}
+//		for (IProperty q:parts.properties()) {
+//			if (q.range().equals(base)) {
+//				return q;
+//			}
+//		}
 		return null;
 	}
 }

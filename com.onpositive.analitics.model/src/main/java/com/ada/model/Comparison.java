@@ -129,7 +129,18 @@ public class Comparison implements IComparison {
 	@Override
 	public boolean match(Object property, IContext ct) {
 		IHasDomain comparisonTarget2 = this.comparisonTarget;
-
+		if (this.comparisonTarget instanceof SingleSelector) {
+			SingleSelector sm = (SingleSelector) this.comparisonTarget;
+			if (sm.isAnd()) {
+				for (Object o : sm.getValue()) {
+					
+					if (!new Comparison(new SingleSelector(o, sm.domain()), comparative).match(property, ct)) {
+						return false;
+					}
+				}
+				return true;
+			}
+		}
 		if (comparisonTarget2 instanceof IValue) {
 			Object val = null;
 			if (comparisonTarget2 instanceof ISelector) {
@@ -137,7 +148,7 @@ public class Comparison implements IComparison {
 					val = cache.get(comparisonTarget2);
 				} else {
 					val = ((ISelector) comparisonTarget2).values(ct).collect(Collectors.toSet());
-					cache.put((ISelector)comparisonTarget2, (Set<Object>) val);
+					cache.put((ISelector) comparisonTarget2, (Set<Object>) val);
 				}
 			} else {
 				if (comparisonTarget2 instanceof NumberInDomain) {
@@ -164,7 +175,7 @@ public class Comparison implements IComparison {
 				}
 			}
 			if (comparisonTarget2 instanceof GenericTime) {
-				val=((GenericTime)comparisonTarget2).time();
+				val = ((GenericTime) comparisonTarget2).time();
 			}
 			if (val == null) {
 				throw new IllegalStateException("Not implemented yet");

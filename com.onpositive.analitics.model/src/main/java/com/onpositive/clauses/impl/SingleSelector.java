@@ -72,6 +72,12 @@ public class SingleSelector implements ISelector {
 		this.value = value;
 		this.type = tp;
 	}
+	public SingleSelector(Object value, IType tp,boolean and) {
+		super();
+		this.value = value;
+		this.type = tp;
+		this.and=and;
+	}
 	@SuppressWarnings("unchecked")
 	public Collection<Object> getValue(){
 		if (value instanceof Collection<?>){
@@ -102,14 +108,22 @@ public class SingleSelector implements ISelector {
 	public List<IProperty> usedProperties() {
 		return Collections.emptyList();
 	}
+	protected boolean and;
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public Stream<Object> values(IContext ct) {
 		if (this.value instanceof Collection<?>){
+			if (this.and) {
+				return Stream.of(this.value);
+			}
 			return ((Collection) this.value).stream();
 		}
 		return Stream.of(this.value);
+	}
+
+	public boolean isAnd() {
+		return this.and;
 	}
 
 }

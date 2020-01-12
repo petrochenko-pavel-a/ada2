@@ -2,6 +2,7 @@ package com.onpositive.analitics.model;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiPredicate;
 
 public class Builtins {
 
@@ -54,6 +55,11 @@ public class Builtins {
 
 		@Override
 		public IProperty keyProperty() {
+			return null;
+		}
+
+		@Override
+		public BiPredicate<Object, Object> containing(IClass c) {
 			return null;
 		}
 	}

@@ -18,6 +18,7 @@ import com.onpositive.clauses.IHasContext;
 import com.onpositive.clauses.ISelector;
 import com.onpositive.clauses.ITypedStore;
 import com.onpositive.clauses.impl.AllInstancesOf;
+import com.onpositive.clauses.impl.QuestionInstances;
 import com.onpositive.clauses.impl.SingleSelector;
 import com.onpositive.clauses.impl.ThemInstances;
 import com.onpositive.nlp.lexer.EntityRecognizer;
@@ -210,6 +211,7 @@ public class UniverseContext implements IContext, ITypedStore {
 			}
 			if (v instanceof IClass) {
 				IClass c = (IClass) v;
+				
 				c.properties().forEach(p -> {
 					Labels annotation2 = p.annotation(Labels.class);
 					if (annotation2 != null) {
@@ -224,6 +226,15 @@ public class UniverseContext implements IContext, ITypedStore {
 						}
 					}
 				});
+			}
+		}
+		QuestionNames annotation2 = v.annotation(QuestionNames.class);
+		if (annotation2!=null) {
+			for (String s:annotation2.directForm()) {
+				recognizer.addEntity(s, new QuestionInstances(v, true));
+			}
+			for (String s:annotation2.inverseForm()) {
+				recognizer.addEntity(s, new QuestionInstances(v, false));
 			}
 		}
 	}

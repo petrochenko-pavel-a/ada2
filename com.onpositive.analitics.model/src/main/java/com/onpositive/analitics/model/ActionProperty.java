@@ -87,5 +87,9 @@ public class ActionProperty implements IProperty{
 		return "PA:"+text;
 	}
 	
+	@Override
+	public boolean canMap() {
+		return false;
+	}
 	
 }

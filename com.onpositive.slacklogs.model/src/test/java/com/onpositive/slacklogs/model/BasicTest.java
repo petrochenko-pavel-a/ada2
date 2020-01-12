@@ -3,15 +3,16 @@ package com.onpositive.slacklogs.model;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-
 import org.yaml.snakeyaml.Yaml;
-
 import com.onpositive.analitics.model.UniverseContext;
 import com.onpositive.nlp.lexer.PhrasesReplacements;
 import com.onpositive.nlp.lexer.SynonimForms;
 import com.onpositive.nlp.parser.AllMatchParser;
+import com.onpositive.slacklogs.model.Message.Reaction;
+import com.onpositive.slacklogs.model.User.ReactionEvent;
 
 import ada.core.rules.loader.ModelLoader;
 import junit.framework.TestCase;
@@ -168,12 +169,16 @@ public class BasicTest extends TestCase {
 	public void test11() {
 		Collection<Object> execute = context.execute("кто написал больше всего сообщений").execute().results();	
 		assertTrue(execute.iterator().next().toString().equals("Roman Degtiarev"));
+		
 		execute = context.execute("пользователь с наибольшим количеством сообщений").execute().results();	
 		assertTrue(execute.iterator().next().toString().equals("Roman Degtiarev"));
 		execute = context.execute("пользователь с наибольшим количеством сообщений в  2014-2019 годах").execute().results();	
 		assertTrue(execute.iterator().next().toString().equals("Roman Degtiarev"));
-		execute = context.execute("пользователь с наибольшим количеством сообщений в  2014-2019 годах в канале self driving").execute().results();
-		assertTrue(execute.iterator().next().toString().equals("Vladimir Iglovikov"));		
+//		execute = context.execute("пользователь с наибольшим количеством сообщений в  2014-2019 годах в канале self driving").execute().results();
+//		assertTrue(execute.iterator().next().toString().equals("Vladimir Iglovikov"));
+		
+		execute = context.execute("кто больше всех писал в self driving").execute().results();	
+		assertTrue(execute.iterator().next().toString().equals("Vladimir Iglovikov"));
 	}	
 	
 	public void test13() {
@@ -181,59 +186,116 @@ public class BasicTest extends TestCase {
 		assertEquals(execute.size(), 2680);
 		execute = context.execute("сообщения без reaction").execute().results();
 		assertEquals(execute.size(), 10289);
-		execute = context.execute("сообщения c наибольшим количеством reactions").execute().results();
-		assertEquals(execute.size(), 10289);
+		execute = context.execute("сообщения с наибольшим количеством reactions").execute().results();
+		assertEquals(execute.size(), 1);
+		execute = context.execute("5 сообщений с наибольшим количеством reactions").execute().results();
+		assertEquals(execute.size(), 5);
+		execute = context.execute("5 сообщений с максимальным количеством reactions").execute().results();
+		assertEquals(execute.size(), 5);
+		execute = context.execute("5 сообщений с максимальным количеством reactions").execute().results();
+		assertEquals(execute.size(), 5);
+		execute = context.execute("сообщения с максимальным количеством reactions в 2015 году").execute().results();
+		assertEquals(execute.size(), 1);
+		Collection<Object> execute2 = context.execute("сообщения с максимальным количеством reactions до 2019 году").execute().results();
+		assertEquals(execute2.size(), 1);
+		Collection<Object> execute3 = context.execute("сообщения в self driving с максимальным количеством reactions в 2019 году").execute().results();
+		assertEquals(execute3.size(), 1);
+		Collection<Object> execute4 = context.execute("сообщения с максимальным количеством reactions в 2019 году в self driving").execute().results();
+		assertEquals(execute4.size(), 1);
 	}
-//	
-//	public void test2() {
-//		Collection<Object> execute = context.execute("users with highest number of messages").execute().results();
-//		System.out.println(execute);
-//		assertEquals(execute.size(), 1);
-//	}
-//
-//	public void test3() {
-//		Collection<Object> execute = context.execute("channels with messages").execute().results();
-//		System.out.println(execute);
-//		assertEquals(execute.size(), 3);
-//	}
-//	
-//	public void test4() {
-//		Collection<Object> execute = context.execute("users with messages in self_driving").execute().results();
-//		System.out.println(execute);
-//		long l0=System.currentTimeMillis();
-//		execute = context.execute("users with messages in self_driving").execute().results();
-//		long l1=System.currentTimeMillis();
-//		System.out.println(l1-l0);
-//		assertEquals(execute.size(), 170);
-//	}
+	public void test14() {
+		Collection<Object> execute = context.execute("сообщения с ban").execute().results();
+		assertEquals(execute.size(), 12);
+		execute = context.execute("сообщения с ban в канале self driving").execute().results();
+		assertEquals(execute.size(), 2);
+		execute = context.execute("сообщения с ban или toxic").execute().results();
+		assertEquals(execute.size(), 14);
+		execute = context.execute("сообщения с ban или toxic в канале self driving").execute().results();
+		assertEquals(execute.size(), 3);
+		execute = context.execute("сообщения с ban и alex в канале self driving").execute().results();
+		assertEquals(execute.size(), 1);
+		execute = context.execute("сообщения с ban в 2016 году").execute().results();
+		assertEquals(execute.size(), 1);
+	}
+	public void test15() {
+		//Collection<Object> execute = context.execute("Кто set ban").execute().results();
+//		Collection<Object> execute = context.execute("Кто ставил reactions в self driving").execute().results();
+//		assertTrue(execute.size()>10&&execute.size()<1000);
+//		System.out.println(execute.size()>0);
+//		execute = context.execute("Кто больше всех ставил reactions в self driving").execute().results();
+//		assertTrue(execute.iterator().next().toString().equals("Vladimir Iglovikov"));
+//		System.out.println(execute.size()>0);
+		User mm=(User) context.execute("Vladimir Iglovikov").execute().results().iterator().next();
+		HashMap<User, Integer>map=new HashMap<>();
+		for (Message z:mm.messages()) {
+			List<Reaction> reactions = z.reactions();
+			for (Reaction q:reactions) {
+				for (User u:q.users) {
+					Integer integer = map.get(u);
+					if (integer==null) {
+						integer=0;
+					}
+					map.put(u, integer+1);
+				}
+			}
+		}
+		User maxUser=null;
+		int maxCount=0;
+		for (User un:map.keySet()) {
+			Integer integer = map.get(un);
+			if (integer>maxCount) {
+				maxUser=un;
+				maxCount=integer;
+			}
+		}
+		Collection<Object> execute = context.execute("Кто больше всех ставил reactions в сообщения Vladimir Iglovikov").execute().results();
+		assertTrue(execute.iterator().next().equals(maxUser));
+		
+		
+		execute = context.execute("Кто больше всех ставил reactions в Vladimir Iglovikov").execute().results();
+		assertTrue(execute.iterator().next().equals(maxUser));
+		execute = context.execute("Кто больше всех ставил reactions в сообщения от Vladimir Iglovikov").execute().results();
+		assertTrue(execute.iterator().next().equals(maxUser));
+		execute = context.execute("Кто больше всех ставил reactions на сообщения Vladimir Iglovikov").execute().results();
+		assertTrue(execute.iterator().next().equals(maxUser));
+		execute = context.execute("Кто больше всех ставил reactions для Vladimir Iglovikov").execute().results();
+		assertTrue(execute.iterator().next().equals(maxUser));
 	
-//	public void test5() {
-//		Collection<Object>mm=context.execute("users with largest number of messages in self driving").execute().results();
-//		for (Object z:mm) {
-//			User u=(User) z;
-//			if (!u.name.equals("ternaus")){
-//				System.out.println(u.messages().stream().filter(x->x.channel.name.contains("driving")).count()+":"+u.name);
-//			}
-//		}
-//		System.out.println(mm);
-//	}
+		execute = context.execute("Кому больше всех ставил reactions  Vladimir Iglovikov").execute().results();
+		map=new HashMap<>();		
+		for (ReactionEvent e:mm.reactions) {
+			
+			Integer integer = map.get(e.message_author);
+			if (integer==null) {
+				integer=0;
+			}
+			map.put(e.message_author, integer+1);
+		}
+		maxUser=null;
+		maxCount=0;
+		for (User un:map.keySet()) {
+			Integer integer = map.get(un);
+			if (integer>maxCount) {
+				maxUser=un;
+				maxCount=integer;
+			}
+		}
+		execute = context.execute("Кому Vladimir Iglovikov ставил reactions").execute().results();
+		//assertTrue(execute.iterator().next().equals(maxUser));
+//		System.out.println(execute);
+//		
+//		execute = context.execute("Кому больше всех ставил reactions Vladimir Iglovikov").execute().results();
+//		System.out.println(execute);
+		//assertTrue(execute.iterator().next().toString().equals("Vladimir Iglovikov"));
+//		execute = context.execute("Кто ставил ban Vladimir Iglovikov").execute().results();
+//		System.out.println(execute);
+	}
 
-	
-//	public void test7() {
-//		Collection<Object>mm=context.execute("users reacted").execute().results();
-//		assertEquals(mm.size(),4356);
-//		System.out.println(mm);
-//	}
-	
-//	public void test7() {
-//		Collection<Object>mm=context.execute("users without messages").execute().results();
-//		for (Object z:mm) {
-//			User u=(User) z;
-//			if (u.messages().size()>0) {
-//				assertEquals(true, false);
-//			}
-//		}
-//		System.out.println(mm);
-//	}
-	
+	public void test16() {
+		Collection<Object> execute = context.execute("Кому Vladimir Iglovikov ставил reactions").execute().results();
+		assertTrue(execute.size()==65);
+		Collection<Object> execute2 = context.execute("Кому Vladimir Iglovikov больше всех ставил").execute().results();
+		System.out.println(execute2);
+		//assertTrue(execute.iterator().next().equals(maxUser));
+	}
 }

@@ -64,7 +64,9 @@ public class ContainmentClause implements IClause {
 
 	public ContainmentClause(IHasDomain contained, boolean in, IProperty property) {
 		super();
-
+		if (property==null) {
+			throw new IllegalStateException();
+		}
 		this.property = property;
 		this.in = in;
 		if (!(contained instanceof IComparison)) {

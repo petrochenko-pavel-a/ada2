@@ -33,4 +33,8 @@ public interface IProperty extends INamed{
 		}
 		return false;
 	}
+	
+	default boolean canMap() {
+		return true;
+	}
 }

@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import com.ada.model.IParsedEntity;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
+import com.onpositive.analitics.model.TypeProvider;
 import com.onpositive.clauses.ICompositeSelector;
 import com.onpositive.clauses.IContext;
 import com.onpositive.clauses.ISelector;
@@ -60,6 +61,11 @@ public class AndSelector implements ICompositeSelector {
 		LinkedHashSet<ISelector> s = new LinkedHashSet<>(prop);
 		if (s.size() == 1) {
 			return s.iterator().next();
+		}
+		if (prop.stream().allMatch(x -> x instanceof SingleSelector)) {
+			LinkedHashSet<Object> os = new LinkedHashSet<>();
+			prop.stream().map(x -> ((SingleSelector) x).getValue()).forEach(v -> os.addAll(v));
+			return new SingleSelector(os, TypeProvider.getType(os),true);
 		}
 		return new AndSelector(s);
 	}

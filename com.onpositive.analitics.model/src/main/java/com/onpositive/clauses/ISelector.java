@@ -47,5 +47,8 @@ public interface ISelector extends IValue{
 	
 	Stream<Object>values(IContext ct);
 
+	 default boolean mappable() {
+		 return true;
+	 }
 	
 }

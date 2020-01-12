@@ -1,5 +1,4 @@
 package com.onpositive.slacklogs.model;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -50,7 +49,7 @@ public class OdsImporter {
 	
 	public static void main(String[] args) {
 		Workspace w=new Workspace();
-		File users= new File("/Users/kor/Downloads/ods/users.json");
+		File users= new File("D:/opendatascience/users.json");
 		LinkedHashMap<String, User>usersMap=new LinkedHashMap<String, User>();
 		try {
 			
@@ -66,7 +65,7 @@ public class OdsImporter {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		File[] list = new File("/Users/kor/Downloads/ods").listFiles();
+		File[] list = new File("D:/opendatascience").listFiles();
 		
 		int ck=0;
 		for (File s:list) {
@@ -81,7 +80,7 @@ public class OdsImporter {
 		}
 		//System.out.println(w);
 		try {
-			ObjectOutputStream os=new ObjectOutputStream(new FileOutputStream("/Users/kor/git/ada2/com.onpositive.slacklogs.model/store.dat"));
+			ObjectOutputStream os=new ObjectOutputStream(new FileOutputStream("store2.dat"));
 			os.writeObject(w);
 			os.close();
 			System.out.println("Done");
@@ -100,7 +99,7 @@ public class OdsImporter {
 				fromJson = new Gson().fromJson(json, OdsImporter.class.getDeclaredField("messages").getGenericType());
 				json.close();
 				for (MessageDto md:fromJson) {
-					Message message=new Message(usersMap.get(md.user),md.text);
+					Message message=new Message(usersMap.get(md.user),null);
 					if (md.reactions!=null) {
 						message.reactions=new Message.Reaction[md.reactions.size()];
 						int a=0;
@@ -124,8 +123,7 @@ public class OdsImporter {
 						message.thread_ts=md.thread_ts.intern();
 					}
 					message.channel=ch;
-					ch.messages.add(message);
-					
+					ch.messages.add(message);					
 				}
 				
 			} catch (Exception e) {
@@ -135,5 +133,4 @@ public class OdsImporter {
 		}
 		return ch;
 	}
-}
- 
+} 

@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,8 +15,12 @@ import java.util.stream.Collectors;
 
 import org.nustaq.serialization.FSTConfiguration;
 
+import com.onpositive.analitics.model.IEntity;
+import com.onpositive.analitics.model.KeyProperty;
+import com.onpositive.analitics.model.Labels;
 import com.onpositive.analitics.model.java.Property;
 import com.onpositive.slacklogs.model.Message.Reaction;
+import com.onpositive.slacklogs.model.User.ReactionEvent;
 
 public class Workspace implements Serializable {
 
@@ -29,7 +34,58 @@ public class Workspace implements Serializable {
 
 	@Property
 	ArrayList<Channel> channels = new ArrayList<Channel>();
+	
+	
+	LinkedHashMap<String,MetaReaction>reactions;
 
+	@Labels("reaction")
+	public static class MetaReaction implements IEntity{
+		
+		public MetaReaction(String name) {
+			this.name=name;
+		}
+
+		@KeyProperty
+		@Property
+		@Labels("name")
+		protected String name;
+		
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((name == null) ? 0 : name.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			MetaReaction other = (MetaReaction) obj;
+			if (name == null) {
+				if (other.name != null)
+					return false;
+			} else if (!name.equals(other.name))
+				return false;
+			return true;
+		}
+
+		@Property
+		@Labels("count")
+		public int count;
+	}
+	
+	@Property
+	@Labels("reactions")
+	public Collection<MetaReaction>reactions(){
+		return reactions.values();
+	}
+	
 	public static Workspace getDebugInstance() {
 		if (readObject != null) {
 			return readObject;
@@ -56,7 +112,7 @@ public class Workspace implements Serializable {
 		}
 		try {
 			BufferedInputStream bufferedInputStream = new BufferedInputStream(
-					new FileInputStream("/Users/kor/git/ada2/com.onpositive.slacklogs.model/store.dat"));
+					new FileInputStream("C:\\Users\\Павел\\git\\ada2\\com.onpositive.slacklogs.model\\store.dat"));
 			ObjectInputStream objectInputStream = new ObjectInputStream(bufferedInputStream);
 			try {
 				readObject = (Workspace) objectInputStream.readObject();
@@ -71,6 +127,7 @@ public class Workspace implements Serializable {
 	}
 
 	public static void init() {
+		readObject.reactions=new LinkedHashMap<>();
 		readObject.users.forEach(u -> u.workspace = readObject);
 		readObject.messages().forEach(m -> {
 			if (m.from != null) {
@@ -81,11 +138,18 @@ public class Workspace implements Serializable {
 			}
 			if (m.reactions!=null) {
 				for (Reaction r:m.reactions) {
+					MetaReaction metaReaction = readObject.reactions.get(r.name);
+					if (metaReaction==null) {
+						MetaReaction mr=new MetaReaction(r.name);
+						readObject.reactions.put(r.name, mr);
+						metaReaction=mr;
+					}
+					metaReaction.count+=r.count;
 					for (User u:r.users) {
 						if (u.reactions == null) {
 							u.reactions = new ArrayList<>();
 						}
-						u.reactions.add(r);
+						u.reactions.add(new ReactionEvent(u, m, r));
 					}
 				}
 			}

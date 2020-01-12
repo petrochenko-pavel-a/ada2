@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.function.BiPredicate;
 
 import org.ocpsoft.prettytime.shade.edu.emory.mathcs.backport.java.util.Collections;
 
@@ -62,6 +63,9 @@ public class JavaClass extends JavaType implements IClass{
 				this.keyProperty=p;
 			}
 		}
+		if (INoKey.class.isAssignableFrom(object)) {
+			this.keyProperty=null;
+		}
 	}
 
 	private IType getType(Type type) {
@@ -99,7 +103,9 @@ public class JavaClass extends JavaType implements IClass{
 		if (this.equals(domain)) {
 			return true;
 		}
-		// TODO Auto-generated method stub
+		if (this.superClass!=null&&this.superClass.equals(domain)) {
+			return true;
+		}
 		return false;
 	}
 
@@ -146,6 +152,11 @@ public class JavaClass extends JavaType implements IClass{
 	@Override
 	public IProperty keyProperty() {
 		return keyProperty;
+	}
+
+	@Override
+	public BiPredicate<Object, Object> containing(IClass c) {
+		return null;
 	}
 	
 }

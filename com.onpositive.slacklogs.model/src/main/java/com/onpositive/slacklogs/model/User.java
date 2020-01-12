@@ -5,18 +5,20 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import com.onpositive.analitics.model.ActionNames;
+import com.onpositive.analitics.model.Containment;
 import com.onpositive.analitics.model.IEntity;
 import com.onpositive.analitics.model.KeyProperty;
 import com.onpositive.analitics.model.Labels;
 import com.onpositive.analitics.model.Lazy;
+import com.onpositive.analitics.model.QuestionNames;
 import com.onpositive.analitics.model.java.InverseOf;
 import com.onpositive.analitics.model.java.Property;
 import com.onpositive.nlp.lexer.IUncountable;
 import com.onpositive.slacklogs.model.Message.Reaction;
 
-@Labels({"user","member","член сообщества","пользователь","чувак","человек","люди","пацан","мужчина","женщина","кого","кто","те кто"})
+@Labels({"user","member","член сообщества","пользователь","чувак","человек","люди","пацан","мужчина","женщина"})
+@QuestionNames(directForm= {"кто","те кто"},inverseForm= {"кому","те кому"})
 public class User implements Serializable,IEntity,IUncountable{
 
 	private String id;
@@ -55,11 +57,13 @@ public class User implements Serializable,IEntity,IUncountable{
 	transient Workspace workspace;
 
 	protected List<Message>messages;
-	protected List<Reaction>reactions;
+	
+	protected List<ReactionEvent>reactions;
 	
 
 	@Property
 	@Labels("reactions")
+	
 	public List<Reaction>reactions(){
 		ArrayList<Reaction>rs=new ArrayList<>();
 		this.messages().forEach(v->{
@@ -67,14 +71,46 @@ public class User implements Serializable,IEntity,IUncountable{
 		});
 		return rs;		
 	}
-	@Property
+	
 	@Labels("reactions")
-	public List<Reaction>reacted(){
-		ArrayList<Reaction>rs=new ArrayList<>();
-		this.messages().forEach(v->{
-			rs.addAll(v.reactions());
-		});
-		return rs;		
+	public static class ReactionEvent {
+		
+		
+		@Property
+		@Containment
+		protected User message_author;
+		
+		@Property
+		
+		protected User reaction_author;
+		
+		public ReactionEvent(User author, Message message, Reaction reaction) {
+			this.message_author = message.from;
+			this.reaction_author=author;
+			this.message = message;
+			this.reaction = reaction;
+		}
+		@Property
+		protected Message message;
+		
+		protected Reaction reaction;
+		
+		
+		@Property
+		public Channel channel() {
+			return message.channel;
+		}		
+	}
+	
+	@Property
+	@Labels("ressacted")
+	@ActionNames("set")
+	@InverseOf("author")
+	public List<ReactionEvent>reacted(){
+		if (this.reactions==null) {
+			return Collections.emptyList();
+		}
+		return this.reactions;		
 	}
 	
 	public LocalDateTime date() {
@@ -104,4 +140,5 @@ public class User implements Serializable,IEntity,IUncountable{
 		}
 		return messages;
 	}
+	
 }

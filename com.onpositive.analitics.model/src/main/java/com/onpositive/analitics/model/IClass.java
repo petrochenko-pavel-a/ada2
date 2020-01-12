@@ -3,6 +3,8 @@ package com.onpositive.analitics.model;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 public interface IClass extends IType{
  
@@ -19,4 +21,6 @@ public interface IClass extends IType{
 	Collection<? extends IClass>contained();
 
 	IProperty keyProperty();
+	
+	BiPredicate<Object, Object>containing(IClass c);
 }

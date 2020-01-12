@@ -85,7 +85,7 @@ public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext 
 
 	@Clause("FILTER")
 	public static PropertyFilter propertyFilter(IProperty prop, IComparison predicate) {
-		if (prop instanceof PropertyFilter) {
+		if (prop instanceof PropertyFilter||prop ==null) {
 			return null;
 		}
 		if (predicate.domain().isSubtypeOf(prop.domain())){
@@ -143,7 +143,7 @@ public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext 
 
 	@Override
 	public IType range() {
-		return prop.range();
+		return prop.domain();
 	}
 
 	@Override
@@ -178,4 +178,8 @@ public class PropertyFilter implements IClause,IHasDomain,IProperty,IHasContext 
 	public void setContext(IContext ct) {
 		this.ct=ct;
 	}	
+	@Override
+	public boolean canMap() {
+		return this.prop.canMap();
+	}
 }

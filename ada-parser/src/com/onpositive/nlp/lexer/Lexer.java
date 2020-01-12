@@ -41,6 +41,11 @@ public class Lexer {
 		for (int i=positions;i<str.length();i++) {
 			char c=str.charAt(i);
 			if (Character.isLetterOrDigit(c)) {
+				if (i>0) {
+				if (Character.isWhitespace(str.charAt(i-1))) {
+					return i;
+				}
+				}
 				continue;
 			}
 			else {
@@ -49,6 +54,7 @@ public class Lexer {
 		}
 		return str.length();
 	}
+	
 	
 	public List<List<Object>> lex(String str) {
 		str=PhrasesReplacements.preprocess(str);

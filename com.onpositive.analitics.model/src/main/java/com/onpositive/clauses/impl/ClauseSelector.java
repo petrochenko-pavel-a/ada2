@@ -32,6 +32,14 @@ public final class ClauseSelector implements ISelector {
 		this.multiplicity = multiplicity;
 		this.clause = clause;
 	}
+	@Override
+	public boolean mappable() {
+		if (clause instanceof MapByProperty) {
+			MapByProperty ms=(MapByProperty) clause;
+			return ms.mappable();
+		}
+		return true;
+	}
 	
 	@Override
 	public ISelector optimize() {

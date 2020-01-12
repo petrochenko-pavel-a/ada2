@@ -5,12 +5,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.onpositive.analitics.model.ActionProperty;
 import com.onpositive.analitics.model.IClass;
 import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
+import com.onpositive.clauses.IContext;
+import com.onpositive.clauses.IHasContext;
 
-public class PathProperty implements IProperty{
+public class PathProperty implements IProperty,IHasContext{
 
 	protected List<IProperty>path;
 
@@ -105,5 +106,18 @@ public class PathProperty implements IProperty{
 			}
 		}
 		return curr;
+	}
+
+	@Override
+	public void setContext(IContext ct) {
+		for (IProperty m:path) {
+			if (m instanceof IHasContext) {
+				((IHasContext) m).setContext(ct);
+			}
+		}
+	}
+	@Override
+	public boolean canMap() {
+		return this.path.get(0).canMap();
 	}
 }

@@ -39,6 +39,9 @@ public class TypeProvider {
 		classes.put(String.class, Builtins.STRING);
 	}
 	public static IType getType(Collection<Object> o) {
+		if (!o.isEmpty()) {
+			return getType(o.iterator().next());
+		}
 		return null;		
 	}
 	public static void register(Class<?> object, IType javaClass) {

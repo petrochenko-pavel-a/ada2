@@ -28,6 +28,7 @@ public class EntityRecognizer implements IEntityRecognizer {
 	}
 
 	public void addEntity(String entityName, Object value) {
+		
 		if (entityName.length() == 0) {
 			return;
 		}
@@ -95,7 +96,11 @@ public class EntityRecognizer implements IEntityRecognizer {
 
 			return null;
 		}
-
+		if (tokens.size()==1) {
+			if (tokens.get(0) instanceof Number) {
+				return null;
+			}
+		}
 		boolean startsWithNumb = false;
 		if (tokens.size() > 0 && (tokens.get(0) instanceof Number)) {
 			startsWithNumb = true;
@@ -144,7 +149,7 @@ public class EntityRecognizer implements IEntityRecognizer {
 				}
 			}
 		}
-		if (arrayList.isEmpty()) {
+		if (arrayList==null||arrayList.isEmpty()) {
 			return null;
 		}
 		// if (!startsWithNumb&&arrayList == null && ((lowerCase.length() >

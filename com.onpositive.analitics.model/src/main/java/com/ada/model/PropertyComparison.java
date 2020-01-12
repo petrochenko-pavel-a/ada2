@@ -8,8 +8,9 @@ import com.onpositive.analitics.model.IProperty;
 import com.onpositive.analitics.model.IType;
 import com.onpositive.clauses.IComparison;
 import com.onpositive.clauses.IContext;
+import com.onpositive.clauses.IHasContext;
 
-public class PropertyComparison implements IComparison{
+public class PropertyComparison implements IComparison,IHasContext{
 
 	protected final Comparative cmp;
 	
@@ -155,5 +156,12 @@ public class PropertyComparison implements IComparison{
 	@Override
 	public boolean isGoodForContainment() {
 		return false;
+	}
+
+	@Override
+	public void setContext(IContext ct) {
+		if (prop instanceof IHasContext) {
+			((IHasContext) prop).setContext(ct);
+		}
 	}
 }
